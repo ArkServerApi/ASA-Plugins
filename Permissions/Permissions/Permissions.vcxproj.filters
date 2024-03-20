@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Private">
+      <UniqueIdentifier>{c128485f-798a-4b1b-b006-c26ecf3b7ebb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public">
+      <UniqueIdentifier>{8000b11c-6c16-4ef9-9c3e-1d539386f913}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Database">
+      <UniqueIdentifier>{a3b6ee0c-8d1c-4772-9cec-e6bb163ca9d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Sqlite">
+      <UniqueIdentifier>{b090c175-c079-441f-bf0c-01d206683d33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Configs">
+      <UniqueIdentifier>{668b71d5-a748-458c-b24a-1aded7d855f3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Private\Main.h">
+      <Filter>Private</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\DBHelper.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\json.hpp">
+      <Filter>Private</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\Database\SqlLiteDB.h">
+      <Filter>Private\Database</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\Database\IDatabase.h">
+      <Filter>Private\Database</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\Database\MysqlDB.h">
+      <Filter>Private\Database</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\Hooks.h">
+      <Filter>Private</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\Helper.h">
+      <Filter>Private</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Permissions.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\CachedPermission.h">
+      <Filter>Private</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Private\Permissions.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\Main.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\DBHelper.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\SQLiteCpp\Backup.cpp">
+      <Filter>Private\Sqlite</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\SQLiteCpp\Column.cpp">
+      <Filter>Private\Sqlite</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\SQLiteCpp\Database.cpp">
+      <Filter>Private\Sqlite</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\SQLiteCpp\Exception.cpp">
+      <Filter>Private\Sqlite</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\SQLiteCpp\Statement.cpp">
+      <Filter>Private\Sqlite</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\SQLiteCpp\Transaction.cpp">
+      <Filter>Private\Sqlite</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\Hooks.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Includes\sqlite3\sqlite3.c">
+      <Filter>Private\Sqlite</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Configs\config.json">
+      <Filter>Configs</Filter>
+    </None>
+    <None Include="..\Configs\PluginInfo.json">
+      <Filter>Configs</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Configs\notes.txt">
+      <Filter>Configs</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

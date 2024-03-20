@@ -1,0 +1,10 @@
+{
+  "UseMysql": false,
+  "MysqlHost": "localhost",
+  "MysqlUser": "root",
+  "MysqlPass": "pass",
+  "MysqlDB": "arkdb",
+  "MysqlPort": 3306,
+  "DbPathOverride": "",
+  "ClusterSyncTime": 60
+}

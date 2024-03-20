@@ -1,0 +1,6 @@
+MySQL 8.0.27 and lower is supported. MySQL 8.0.28 and higher is not supported. All MariaDB versions are supported.
+If you want to use MySQL or MariaDB, set UseMysql to true and fill in the Mysql settings below.
+
+If you want to use SQLite, set UseMysql to false and optionally set a custom path to the database using DbPathOverride.
+
+ClusterSyncTime controls how many seconds before it refreshes the player permissions from the database. Minimum is 20 seconds!

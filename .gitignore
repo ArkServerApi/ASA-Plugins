@@ -1,0 +1,17 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/ServerAPI-Plugins/FileContentIndex
+/.vs/ServerAPI-Plugins/v17
+/Permissions/x64/Ark
+/.vs
+/Permissions/.vs/Permissions
+/Permissions/Permissions/x64/Ark
+/Permissions/Permissions/x64/Lethal
+/Permissions/x64/Lethal
+/Permissions/out_lib/Permissions.lib
+/ArkShop/.vs/ArkShop
+/ArkShop/out_lib/ArkShop.lib
+/ArkShop/x64
+/ArkShop/ArkShop/x64

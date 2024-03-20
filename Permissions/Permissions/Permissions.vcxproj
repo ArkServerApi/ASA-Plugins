@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Ark|x64">
+      <Configuration>Ark</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Lethal|x64">
+      <Configuration>Lethal</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Private\CachedPermission.h" />
+    <ClInclude Include="Private\Database\IDatabase.h" />
+    <ClInclude Include="Private\Database\MysqlDB.h" />
+    <ClInclude Include="Private\Database\SqlLiteDB.h" />
+    <ClInclude Include="Private\Helper.h" />
+    <ClInclude Include="Private\Hooks.h" />
+    <ClInclude Include="Private\json.hpp" />
+    <ClInclude Include="Private\Main.h" />
+    <ClInclude Include="Public\Permissions.h" />
+    <ClInclude Include="Public\DBHelper.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Includes\sqlite3\sqlite3.c" />
+    <ClCompile Include="Private\DBHelper.cpp" />
+    <ClCompile Include="Private\Hooks.cpp" />
+    <ClCompile Include="Private\Main.cpp" />
+    <ClCompile Include="Private\Permissions.cpp" />
+    <ClCompile Include="Private\SQLiteCpp\Backup.cpp" />
+    <ClCompile Include="Private\SQLiteCpp\Column.cpp" />
+    <ClCompile Include="Private\SQLiteCpp\Database.cpp" />
+    <ClCompile Include="Private\SQLiteCpp\Exception.cpp" />
+    <ClCompile Include="Private\SQLiteCpp\Statement.cpp" />
+    <ClCompile Include="Private\SQLiteCpp\Transaction.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Configs\config.json" />
+    <None Include="..\Configs\PluginInfo.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Configs\notes.txt" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{356B181C-6960-46EC-86B3-2020A7E50FAF}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Permissions</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Ark|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Lethal|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Ark|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Lethal|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Ark|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(MSBuildStartupDirectory);$(IncludePath)</IncludePath>
+    <LibraryPath>d:\Projects;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Lethal|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(MSBuildStartupDirectory);$(IncludePath)</IncludePath>
+    <LibraryPath>d:\Projects;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Ark|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;PERMISSIONS_EXPORTS;_WINDOWS;_USRDLL;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;PERMISSIONS_ARK;_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Includes;$(SolutionDir)Includes\sqlite3;$(SolutionDir)..\..\ServerAPI\AsaApi\Core\Public;$(SolutionDir)..\..\ServerAPI\AsaApi\Core\Public\API;$(SolutionDir)..\..\ServerAPI\AsaApi\Core\Public\API\ARK;$(SolutionDir)..\..\ServerAPI\AsaApi\Core\Public\API\UE;$(SolutionDir)..\..\ServerAPI\AsaApi\Core\Public\Logger;$(SolutionDir)..\..\ServerAPI\AsaApi\vcpkg_installed\x64-windows-static-md\x64-windows-static-md\include</AdditionalIncludeDirectories>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)Libs;$(SolutionDir)..\..\ServerAPI\out_lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /I  /Y "$(TargetDir)Permissions.lib" "..\out_lib\"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Lethal|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;PERMISSIONS_EXPORTS;_WINDOWS;_USRDLL;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;PERMISSIONS_ARK;_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Includes;$(SolutionDir)Includes\sqlite3;$(SolutionDir)..\..\ServerAPI\AsaApi\Core\Public;$(SolutionDir)..\..\ServerAPI\AsaApi\Core\Public\API;$(SolutionDir)..\..\ServerAPI\AsaApi\Core\Public\API\ARK;$(SolutionDir)..\..\ServerAPI\AsaApi\Core\Public\API\UE;$(SolutionDir)..\..\ServerAPI\AsaApi\Core\Public\Logger;$(SolutionDir)..\..\ServerAPI\AsaApi\vcpkg_installed\x64-windows-static-md\x64-windows-static-md\include</AdditionalIncludeDirectories>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)Libs;$(SolutionDir)..\..\ServerAPI\out_lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /I  /Y "$(TargetDir)$(ProjectName).lib" "$(SolutionDir)out_lib\"
+xcopy /I  /Y "$(TargetDir)$(ProjectName).lib" "$(SolutionDir)..\..\ARK-API-Stable-Libs\"
+xcopy /I  /Y "$(TargetDir)$(ProjectName).lib" "$(SolutionDir)..\..\ARK-API-Stable-Libs\1.00\"
+
+copy "$(SolutionDir)Configs\*.*" "F:\ASA-Dedicated\asa-server\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\" /y
+copy "$(SolutionDir)$(PlatformName)\$(ConfigurationName)\$(ProjectName).dll" "F:\ASA-Dedicated\asa-server\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\" /y
+copy "$(SolutionDir)$(PlatformName)\$(ConfigurationName)\$(ProjectName).pdb" "F:\ASA-Dedicated\asa-server\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\" /y</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
