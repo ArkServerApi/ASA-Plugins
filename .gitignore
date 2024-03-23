@@ -2,8 +2,8 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs/ServerAPI-Plugins/FileContentIndex
-/.vs/ServerAPI-Plugins/v17
+/.vs/ASA-Plugins/FileContentIndex
+/.vs/ASA-Plugins/v17
 /Permissions/x64/Ark
 /.vs
 /Permissions/.vs/Permissions
