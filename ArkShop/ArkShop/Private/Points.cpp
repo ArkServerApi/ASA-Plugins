@@ -108,7 +108,7 @@ namespace ArkShop::Points
 				return;
 			}
 
-			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && !config["General"].value("UseOriginalTradeCommandWithUI", false))
+			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(player_controller) && !config["General"].value("UseOriginalTradeCommandWithUI", false))
 			{
 				receiver_player = AsaApi::GetApiUtils().FindPlayerFromEOSID(in_param);
 			}
@@ -198,7 +198,7 @@ namespace ArkShop::Points
 		{
 			int points = GetPoints(eos_id);
 
-			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI"))
+			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(player_controller))
 			{
 				ArkShopUI::UpdatePoints(eos_id, points);
 				return;

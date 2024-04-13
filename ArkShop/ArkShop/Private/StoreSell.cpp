@@ -5,6 +5,7 @@
 #include "ArkShop.h"
 #include "DBHelper.h"
 #include "ShopLog.h"
+#include <ArkShopUIHelper.h>
 
 namespace ArkShop::StoreSell
 {
@@ -188,7 +189,7 @@ namespace ArkShop::StoreSell
 
 	void ShowItems(AShooterPlayerController* player_controller, FString* message, int, int)
 	{
-		if (AsaApi::Tools::IsPluginLoaded("ArkShopUI"))
+		if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(player_controller))
 			return;
 
 		TArray<FString> parsed;

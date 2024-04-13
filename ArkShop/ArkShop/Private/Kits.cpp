@@ -108,8 +108,12 @@ namespace ArkShop::Kits
 
 		if (returnValue && AsaApi::Tools::IsPluginLoaded("ArkShopUI"))
 		{
-			FString kitData(database->GetPlayerKits(eos_id));
-			ArkShopUI::PlayerKits(eos_id, kitData);
+			auto player_controller = AsaApi::GetApiUtils().FindPlayerFromEOSID(eos_id);
+			if (player_controller && ArkShopUI::CanUseMod(player_controller))
+			{
+				FString kitData(database->GetPlayerKits(eos_id));
+				ArkShopUI::PlayerKits(eos_id, kitData);
+			}
 		}
 
 		return returnValue;
@@ -443,8 +447,12 @@ namespace ArkShop::Kits
 
 		if (returnValue && AsaApi::Tools::IsPluginLoaded("ArkShopUI"))
 		{
-			FString kitData(database->GetPlayerKits(eos_id));
-			ArkShopUI::PlayerKits(eos_id, kitData);
+			auto player_controller = AsaApi::GetApiUtils().FindPlayerFromEOSID(eos_id);
+			if (player_controller && ArkShopUI::CanUseMod(player_controller))
+			{
+				FString kitData(database->GetPlayerKits(eos_id));
+				ArkShopUI::PlayerKits(eos_id, kitData);
+			}
 		}
 	}
 
@@ -467,7 +475,7 @@ namespace ArkShop::Kits
 		}
 		else
 		{
-			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI"))
+			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(player_controller))
 			{
 				const FString& eos_id = AsaApi::GetApiUtils().GetEOSIDFromController(player_controller);
 				if (!eos_id.IsEmpty())

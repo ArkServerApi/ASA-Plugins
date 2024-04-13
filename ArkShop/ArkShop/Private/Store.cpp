@@ -481,7 +481,7 @@ namespace ArkShop::Store
 
 	void ShowItems(AShooterPlayerController* player_controller, FString* message, int, int)
 	{
-		if (AsaApi::Tools::IsPluginLoaded("ArkShopUI"))
+		if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(player_controller))
 		{
 			if (ArkShopUI::RequestUI(player_controller))
 			{

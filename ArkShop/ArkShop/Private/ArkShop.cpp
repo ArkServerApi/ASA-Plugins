@@ -17,6 +17,7 @@
 #include "Helpers.h"
 
 #include "Requests.h"
+#include "Ark/AsaApiUtilsMessagingManager.h"
 
 #pragma comment(lib, "AsaApi.lib")
 #pragma comment(lib, "Permissions.lib")
@@ -684,6 +685,7 @@ void ShowHelp(AShooterPlayerController* player_controller, FString* /*unused*/, 
 void Load()
 {
 	Log::Get().Init("ArkShop");
+	AsaApi::GetApiUtils().SetMessagingManager<AsaApiUtilsMessagingManager>();
 
 	try
 	{

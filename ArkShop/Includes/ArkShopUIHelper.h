@@ -1,8 +1,15 @@
+/*
+ * Public API for ArkShopUI
+ * Copyright (C) Lethal Plugins - All Rights Reserved
+ * Unauthorized copying/distribution of these files, via any medium is strictly prohibited
+ * Proprietary and confidential
+ * Written by Lethal <www.lethalplugins.com>, April 2024
+ */
 #pragma once
 
 #include <API/ARK/Ark.h>
 
-#ifdef ARKSHOPUI_EXPORTS
+#ifdef ArkShopUI_EXPORTS
 #define ARK_API __declspec(dllexport)
 #else
 #define ARK_API
@@ -19,6 +26,19 @@ namespace ArkShopUI
 			return false;
 
 		T addr = (T)GetProcAddress(hmodule, "RequestUI");
+
+		return addr(player_controller);
+	}
+
+	inline ARK_API bool CanUseMod(AShooterPlayerController* player_controller)
+	{
+		using T = bool (*) (AShooterPlayerController*);
+
+		HMODULE hmodule = GetModuleHandleA("ArkShopUI.dll");
+		if (!hmodule)
+			return false;
+
+		T addr = (T)GetProcAddress(hmodule, "CanUseMod");
 
 		return addr(player_controller);
 	}
@@ -51,7 +71,7 @@ namespace ArkShopUI
 
 	inline ARK_API bool PlayerKits(const FString& eos_id, FString kitdata)
 	{
-		using T = bool (*) (const FString& eos_id, FString);
+		using T = bool (*) (const FString&, FString);
 
 		HMODULE hmodule = GetModuleHandleA("ArkShopUI.dll");
 		if (!hmodule)
