@@ -906,7 +906,7 @@ namespace Permissions
 	void ReadConfig()
 	{
 		const std::string config_path = GetConfigPath();
-		std::ifstream file{ config_path };
+		std::ifstream file{config_path};
 		if (!file.is_open())
 			throw std::runtime_error("Can't open config.json");
 
