@@ -367,8 +367,6 @@ namespace Permissions
 
 	void AddTribeToTimedGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-
-
 		auto result = AddTribeToTimedGroup(*cmd);
 		HandlePlayerMessage(player_controller, result, "Successfully added tribe to timed group.");
 	}
