@@ -30,9 +30,9 @@ namespace ArkShopUI
 		return addr(player_controller);
 	}
 
-	inline ARK_API bool CanUseMod(AShooterPlayerController* player_controller)
+	inline ARK_API bool CanUseMod(int platform)
 	{
-		using T = bool (*) (AShooterPlayerController*);
+		using T = bool (*) (int);
 
 		HMODULE hmodule = GetModuleHandleA("ArkShopUI.dll");
 		if (!hmodule)
@@ -40,7 +40,7 @@ namespace ArkShopUI
 
 		T addr = (T)GetProcAddress(hmodule, "CanUseMod");
 
-		return addr(player_controller);
+		return addr(platform);
 	}
 
 	inline ARK_API bool Reload()

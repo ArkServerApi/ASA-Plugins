@@ -187,9 +187,9 @@ namespace ArkShop::StoreSell
 		}
 	}
 
-	void ShowItems(AShooterPlayerController* player_controller, FString* message, int, int)
+	void ShowItems(AShooterPlayerController* player_controller, FString* message, int, int senderPlatform)
 	{
-		if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(player_controller))
+		if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(senderPlatform))
 			return;
 
 		TArray<FString> parsed;
