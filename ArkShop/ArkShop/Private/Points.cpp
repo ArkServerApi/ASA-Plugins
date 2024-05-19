@@ -78,7 +78,7 @@ namespace ArkShop::Points
 	/**
 	 * \brief Send points to the other player (using character name)
 	 */
-	void Trade(AShooterPlayerController* player_controller, FString* message, int, int)
+	void Trade(AShooterPlayerController* player_controller, FString* message, int, int senderPlatform)
 	{
 		const FString& sender_eos_id = AsaApi::IApiUtils::GetEOSIDFromController(player_controller);
 
@@ -108,7 +108,7 @@ namespace ArkShop::Points
 				return;
 			}
 
-			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && !config["General"].value("UseOriginalTradeCommandWithUI", false))
+			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(senderPlatform) && !config["General"].value("UseOriginalTradeCommandWithUI", false))
 			{
 				receiver_player = AsaApi::GetApiUtils().FindPlayerFromEOSID(in_param);
 			}
@@ -190,7 +190,7 @@ namespace ArkShop::Points
 		}
 	}
 
-	void PrintPoints(AShooterPlayerController* player_controller, FString* /*unused*/, int, int)
+	void PrintPoints(AShooterPlayerController* player_controller, FString* /*unused*/, int, int senderPlatform)
 	{
 		const FString& eos_id = AsaApi::IApiUtils::GetEOSIDFromController(player_controller);
 
@@ -198,7 +198,7 @@ namespace ArkShop::Points
 		{
 			int points = GetPoints(eos_id);
 
-			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI"))
+			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(senderPlatform))
 			{
 				ArkShopUI::UpdatePoints(eos_id, points);
 				return;

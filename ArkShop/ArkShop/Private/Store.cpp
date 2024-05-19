@@ -443,7 +443,7 @@ namespace ArkShop::Store
 
 	// Chat callbacks
 
-	void ChatBuy(AShooterPlayerController* player_controller, FString* message, int, int)
+	void ChatBuy(AShooterPlayerController* player_controller, FString* message, int, int senderPlatform)
 	{
 		if (!IsStoreEnabled(player_controller))
 			return;
@@ -479,9 +479,9 @@ namespace ArkShop::Store
 		}
 	}
 
-	void ShowItems(AShooterPlayerController* player_controller, FString* message, int, int)
+	void ShowItems(AShooterPlayerController* player_controller, FString* message, int, int senderPlatform)
 	{
-		if (AsaApi::Tools::IsPluginLoaded("ArkShopUI"))
+		if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(senderPlatform))
 		{
 			if (ArkShopUI::RequestUI(player_controller))
 			{

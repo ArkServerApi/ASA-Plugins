@@ -61,7 +61,7 @@ namespace ArkShop::Kits
 	/**
 	 * \brief Adds or reduces kits of the specific player
 	 */
-	bool ChangeKitAmount(const FString& kit_name, int amount, const FString& eos_id)
+	bool ChangeKitAmount(const FString& kit_name, int amount, const FString& eos_id, int senderPlatform)
 	{
 		if (amount == 0)
 		{
@@ -106,13 +106,18 @@ namespace ArkShop::Kits
 
 		bool returnValue = SaveConfig(player_kit_json.dump(), eos_id);
 
-		if (returnValue && AsaApi::Tools::IsPluginLoaded("ArkShopUI"))
+		if (returnValue && AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(senderPlatform))
 		{
 			FString kitData(database->GetPlayerKits(eos_id));
 			ArkShopUI::PlayerKits(eos_id, kitData);
 		}
 
 		return returnValue;
+	}
+
+	bool ChangeKitAmount(const FString& kit_name, int amount, const FString& eos_id)
+	{
+		return ChangeKitAmount(kit_name, amount, eos_id, 0);
 	}
 
 	/**
@@ -279,7 +284,7 @@ namespace ArkShop::Kits
 	/**
 	 * \brief Redeem the kit for the specific player
 	 */
-	void RedeemKit(AShooterPlayerController* player_controller, const FString& kit_name, bool should_log, bool from_spawn)
+	void RedeemKit(AShooterPlayerController* player_controller, const FString& kit_name, bool should_log, bool from_spawn, int senderPlatform)
 	{
 		if (AsaApi::IApiUtils::IsPlayerDead(player_controller))
 		{
@@ -326,7 +331,7 @@ namespace ArkShop::Kits
 			}
 
 			if (const int kit_amount = GetKitAmount(eos_id, kit_name);
-				kit_amount > 0 && ChangeKitAmount(kit_name, -1, eos_id))
+				kit_amount > 0 && ChangeKitAmount(kit_name, -1, eos_id, senderPlatform))
 			{
 				GiveKitFromJson(player_controller, kit_entry);
 
@@ -399,7 +404,7 @@ namespace ArkShop::Kits
 			*kits_list_str);
 	}
 
-	void InitKitData(const FString& eos_id)
+	void InitKitData(const FString& eos_id, int senderPlatform)
 	{
 		//Kits json config
 		auto player_kit_json = GetPlayerKitsConfig(eos_id);
@@ -441,16 +446,21 @@ namespace ArkShop::Kits
 
 		bool returnValue = SaveConfig(player_kit_json.dump(), eos_id);
 
-		if (returnValue && AsaApi::Tools::IsPluginLoaded("ArkShopUI"))
+		if (returnValue && AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(senderPlatform))
 		{
 			FString kitData(database->GetPlayerKits(eos_id));
 			ArkShopUI::PlayerKits(eos_id, kitData);
 		}
 	}
 
+	void InitKitData(const FString& eos_id)
+	{
+		InitKitData(eos_id, 0);
+	}
+
 	// Chat callbacks
 
-	void Kit(AShooterPlayerController* player_controller, FString* message, int, int)
+	void Kit(AShooterPlayerController* player_controller, FString* message, int, int senderPlatform)
 	{
 		if (!IsStoreEnabled(player_controller))
 			return;
@@ -463,11 +473,11 @@ namespace ArkShop::Kits
 
 		if (parsed.IsValidIndex(1))
 		{
-			RedeemKit(player_controller, parsed[1], true, false);
+			RedeemKit(player_controller, parsed[1], true, false, senderPlatform);
 		}
 		else
 		{
-			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI"))
+			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(senderPlatform))
 			{
 				const FString& eos_id = AsaApi::GetApiUtils().GetEOSIDFromController(player_controller);
 				if (!eos_id.IsEmpty())
@@ -482,7 +492,7 @@ namespace ArkShop::Kits
 		}
 	}
 
-	void BuyKit(AShooterPlayerController* player_controller, FString* message, int, int)
+	void BuyKit(AShooterPlayerController* player_controller, FString* message, int, int senderPlatform)
 	{
 		if (AsaApi::IApiUtils::IsPlayerDead(player_controller))
 			return;
@@ -549,7 +559,7 @@ namespace ArkShop::Kits
 
 				if (Points::GetPoints(eos_id) >= final_price && Points::SpendPoints(final_price, eos_id))
 				{
-					ChangeKitAmount(kit_name, amount, eos_id);
+					ChangeKitAmount(kit_name, amount, eos_id, senderPlatform);
 
 					AsaApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"),
 						*GetText("BoughtKit"), *kit_name);
@@ -604,7 +614,7 @@ namespace ArkShop::Kits
 
 			if (DBHelper::IsPlayerExists(eos_id))
 			{
-				return ChangeKitAmount(kit_name, amount, eos_id);
+				return ChangeKitAmount(kit_name, amount, eos_id, 0);
 			}
 		}
 
@@ -700,7 +710,7 @@ namespace ArkShop::Kits
 						if (const int kit_amount = GetKitAmount(eos_id, kit);
 							kit_amount > 0 && CanUseKit(player, eos_id, kit))
 						{
-							RedeemKit(player, kit, false, true);
+							RedeemKit(player, kit, false, true, 0);
 							break;
 						}
 					}
