@@ -91,36 +91,26 @@ namespace Permissions
 
 		return AddPlayerToGroup(eos_id, group);
 	}
-	void HandleMessage(APlayerController* player_controller, auto result, auto message) {
+	void HandlePlayerMessage(APlayerController* player_controller, auto result, auto message) {
 		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-		if (!result.has_value()) {
-			if (!HideAllPlayerSuccessMessages) {
-				if (!SendMessagesAsNotification) {
-					AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green, message);
-				}
-				else
-				{
-					AsaApi::GetApiUtils().SendNotification(shooter_controller, FColorList::Green, TextSize, DisplayTime, nullptr, message);
-				}
-			}
+		if (SendMessagesAsNotification && result.has_value()) {
+			AsaApi::GetApiUtils().SendNotification(shooter_controller, FColorList::Red, TextSize, DisplayTime, nullptr, result.value().c_str());
 		}
-		else
-		{
-			if (!SendMessagesAsNotification) {
-				AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, result.value().c_str());
-			}
-			else
-			{
-				AsaApi::GetApiUtils().SendNotification(shooter_controller, FColorList::Red, TextSize, DisplayTime, nullptr, result.value().c_str());
-			}
+		else if (!SendMessagesAsNotification && result.has_value()) {
+			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, result.value().c_str());
 		}
+		else if (!HideAllPlayerSuccessMessages && SendMessagesAsNotification) {
+			AsaApi::GetApiUtils().SendNotification(shooter_controller, FColorList::Green, TextSize, DisplayTime, nullptr, message);
+		}
+		else if (!HideAllPlayerSuccessMessages{
+			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green, message);
+			}
 	}
+
 	void AddPlayerToGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = AddPlayerToGroup(*cmd);
-		HandleMessage(player_controller, result, "Successfully added player.");
+		HandlePlayerMessage(player_controller, result, "Successfully added player.");
 	}
 
 	void AddPlayerToGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -161,10 +151,8 @@ namespace Permissions
 
 	void RemovePlayerFromGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = RemovePlayerFromGroup(*cmd);
-		HandleMessage(player_controller, result, "Successfully removed player.");
+		HandlePlayerMessage(player_controller, result, "Successfully removed player.");
 	}
 
 	void RemovePlayerFromGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -213,10 +201,8 @@ namespace Permissions
 
 	void AddPlayerToTimedGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = AddPlayerToTimedGroup(*cmd);
-		HandleMessage(player_controller, result, "Successfully added player to timed group.");
+		HandlePlayerMessage(player_controller, result, "Successfully added player to timed group.");
 	}
 
 	void AddPlayerToTimedGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -245,10 +231,8 @@ namespace Permissions
 
 	void RemovePlayerFromTimedGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = RemovePlayerFromTimedGroup(*cmd);
-		HandleMessage(player_controller, result, "Successfully aremoved player from timed group.");
+		HandlePlayerMessage(player_controller, result, "Successfully aremoved player from timed group.");
 
 	}
 
@@ -289,10 +273,10 @@ namespace Permissions
 
 	void AddTribeToGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
+
 
 		auto result = AddTribeToGroup(*cmd);
-		HandleMessage(player_controller, result, "Successfully added tribe.");
+		HandlePlayerMessage(player_controller, result, "Successfully added tribe.");
 	}
 
 	void AddTribeToGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -332,10 +316,8 @@ namespace Permissions
 
 	void RemoveTribeFromGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = RemoveTribeFromGroup(*cmd);
-		HandleMessage(player_controller, result, "Successfully removed tribe.");
+		HandlePlayerMessage(player_controller, result, "Successfully removed tribe.");
 	}
 
 	void RemoveTribeFromGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -385,10 +367,10 @@ namespace Permissions
 
 	void AddTribeToTimedGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
+
 
 		auto result = AddTribeToTimedGroup(*cmd);
-		HandleMessage(player_controller, result, "Successfully added tribe to timed group.");
+		HandlePlayerMessage(player_controller, result, "Successfully added tribe to timed group.");
 	}
 
 	void AddTribeToTimedGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -428,10 +410,8 @@ namespace Permissions
 
 	void RemoveTribeFromTimedGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = RemoveTribeFromTimedGroup(*cmd);
-		HandleMessage(player_controller, result, "Successfully removed tribe from timed group.");
+		HandlePlayerMessage(player_controller, result, "Successfully removed tribe from timed group.");
 	}
 
 	void RemoveTribeFromTimedGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -460,10 +440,10 @@ namespace Permissions
 
 	void AddGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
+
 
 		auto result = AddGroupCommand(*cmd);
-		HandleMessage(player_controller, result, "Successfully added group");
+		HandlePlayerMessage(player_controller, result, "Successfully added group");
 	}
 
 	void AddGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -492,10 +472,8 @@ namespace Permissions
 
 	void RemoveGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = RemoveGroupCommand(*cmd);
-		HandleMessage(player_controller, result, "Successfully removed group");
+		HandlePlayerMessage(player_controller, result, "Successfully removed group");
 	}
 
 	void RemoveGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -525,10 +503,10 @@ namespace Permissions
 
 	void GroupGrantPermissionCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
+
 
 		auto result = GroupGrantPermission(*cmd);
-		HandleMessage(player_controller, result, "Successfully granted permission");
+		HandlePlayerMessage(player_controller, result, "Successfully granted permission");
 	}
 
 	void GroupGrantPermissionRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -558,10 +536,8 @@ namespace Permissions
 
 	void GroupRevokePermissionCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = GroupRevokePermission(*cmd);
-		HandleMessage(player_controller, result, "Successfully revoked permission");
+		HandlePlayerMessage(player_controller, result, "Successfully revoked permission");
 	}
 
 	void GroupRevokePermissionRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -906,11 +882,17 @@ namespace Permissions
 	void ReadConfig()
 	{
 		const std::string config_path = GetConfigPath();
-		std::ifstream file{config_path};
+		std::ifstream file{ config_path };
 		if (!file.is_open())
 			throw std::runtime_error("Can't open config.json");
 
 		file >> config;
+
+		HideAllPlayerSuccessMessages = config.value("HideAllPlayerSuccessMessages", false);
+		SendMessagesAsNotification = config.value("SendMessagesAsNotification", false);
+
+		TextSize = config.value("TextSize", 1.5f);
+		DisplayTime = config.value("DisplayTime", 3.0f);
 
 		file.close();
 	}
@@ -922,13 +904,6 @@ namespace Permissions
 		try
 		{
 			ReadConfig();
-
-			HideAllPlayerSuccessMessages = config.value("HideAllPlayerSuccessMessages", false);
-			SendMessagesAsNotification = config.value("SendMessagesAsNotification", false);
-
-			TextSize = config.value("TextSize", 1.5f);
-			DisplayTime = config.value("DisplayTime", 3.0f);
-
 		}
 		catch (const std::exception& error)
 		{
@@ -948,12 +923,6 @@ namespace Permissions
 		try
 		{
 			ReadConfig();
-
-			HideAllPlayerSuccessMessages = config.value("HideAllPlayerSuccessMessages", false);
-			SendMessagesAsNotification = config.value("SendMessagesAsNotification", false);
-
-			TextSize = config.value("TextSize", 1.5f);
-			DisplayTime = config.value("DisplayTime", 3.0f);
 		}
 		catch (const std::exception& error)
 		{
@@ -975,12 +944,6 @@ namespace Permissions
 		try
 		{
 			ReadConfig();
-
-			HideAllPlayerSuccessMessages = config.value("HideAllPlayerSuccessMessages", false);
-			SendMessagesAsNotification = config.value("SendMessagesAsNotification", false);
-
-			TextSize = config.value("TextSize", 1.5f);
-			DisplayTime = config.value("DisplayTime", 3.0f);
 
 			SyncFrequency = config.value("ClusterSyncTime", 60);
 			if (SyncFrequency < 20)
