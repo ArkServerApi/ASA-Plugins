@@ -73,7 +73,7 @@ namespace ArkShop::StoreSell
 				{
 					item->SetQuantity(item_count - needed_amount, true);
 					inventory->NotifyClientsItemStatus(item, false, false, true, false, false, nullptr, nullptr, false,
-						false, true);
+						false, true, false);
 				}
 				else
 				{

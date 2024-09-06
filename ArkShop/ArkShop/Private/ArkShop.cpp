@@ -161,7 +161,7 @@ void ArkShop::ApplyItemStats(TArray<UPrimalItem*> items, int armor, int durabili
 			}
 
 			if (updated)
-				item->UpdatedItem(false);
+				item->UpdatedItem(false, false);
 		}
 	}
 }
@@ -425,7 +425,7 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 
 				FCustomItemData customItemData = GetDinoCustomItemData(dino, saddle);
 				item->SetCustomItemData(&customItemData);
-				item->UpdatedItem(true);
+				item->UpdatedItem(true, false);
 
 				if (player_controller->GetPlayerInventoryComponent())
 				{
