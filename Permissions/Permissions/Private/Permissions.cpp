@@ -233,50 +233,60 @@ namespace Permissions
 
 	std::optional<std::string> AddPlayerToGroup(const FString& eos_id, const FString& group)
 	{
+		auto returnvalue = database->AddPlayerToGroup(eos_id, group);
 		NotifySubscribers(eos_id, 0);
-		return database->AddPlayerToGroup(eos_id, group);
+		return returnvalue;
 	}
 
 	std::optional<std::string> RemovePlayerFromGroup(const FString& eos_id, const FString& group)
 	{
 		NotifySubscribers(eos_id, 0);
-		return database->RemovePlayerFromGroup(eos_id, group);
+		auto returnvalue = database->RemovePlayerFromGroup(eos_id, group);
+		NotifySubscribers(eos_id, 0);
+		return returnvalue;
 	}
 
 	std::optional<std::string> AddPlayerToTimedGroup(const FString& eos_id, const FString& group, int secs, int delaySecs)
 	{
 		NotifySubscribers(eos_id, 0);
-		return database->AddPlayerToTimedGroup(eos_id, group, secs, delaySecs);
+		auto returnvalue = database->AddPlayerToTimedGroup(eos_id, group, secs, delaySecs);
+		NotifySubscribers(eos_id, 0);
+		return returnvalue;
 	}
 
 	std::optional<std::string> RemovePlayerFromTimedGroup(const FString& eos_id, const FString& group)
 	{
+		auto returnvalue = database->RemovePlayerFromTimedGroup(eos_id, group);
 		NotifySubscribers(eos_id, 0);
-		return database->RemovePlayerFromTimedGroup(eos_id, group);
+		return returnvalue;
 	}
 
 	std::optional<std::string> AddTribeToGroup(int tribeId, const FString& group)
 	{
+		auto returnvalue = database->AddTribeToGroup(tribeId, group);
 		NotifySubscribers(L"", tribeId);
-		return database->AddTribeToGroup(tribeId, group);
+		return returnvalue;
 	}
 
 	std::optional<std::string> RemoveTribeFromGroup(int tribeId, const FString& group)
 	{
+		auto returnvalue = database->RemoveTribeFromGroup(tribeId, group);
 		NotifySubscribers(L"", tribeId);
-		return database->RemoveTribeFromGroup(tribeId, group);
+		return returnvalue;
 	}
 
 	std::optional<std::string> AddTribeToTimedGroup(int tribeId, const FString& group, int secs, int delaySecs)
 	{
+		auto returnvalue = database->AddTribeToTimedGroup(tribeId, group, secs, delaySecs);
 		NotifySubscribers(L"", tribeId);
-		return database->AddTribeToTimedGroup(tribeId, group, secs, delaySecs);
+		return returnvalue;
 	}
 
 	std::optional<std::string> RemoveTribeFromTimedGroup(int tribeId, const FString& group)
 	{
+		auto returnvalue = database->RemoveTribeFromTimedGroup(tribeId, group);
 		NotifySubscribers(L"", tribeId);
-		return database->RemoveTribeFromTimedGroup(tribeId, group);
+		return returnvalue;
 	}
 	
 	std::optional<std::string> AddGroup(const FString& group)
