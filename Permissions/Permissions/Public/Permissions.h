@@ -44,4 +44,7 @@ namespace Permissions
 
 	PERMISSIONS_API void AddPlayerPermissionCallback(FString CallbackName, bool onlyCheckOnline, bool cacheBySteamId, bool cacheByTribe, const std::function<TArray<FString>(const FString&, int*)>& callback);
 	PERMISSIONS_API void RemovePlayerPermissionCallback(FString CallbackName);
+
+	PERMISSIONS_API void SubscribePermissionGroupUpdatedCallback(FString CallbackName, const std::function<void(const FString&, int)>& callback);
+	PERMISSIONS_API void UnSubscribePermissionGroupUpdatedCallback(FString CallbackName);
 }

@@ -18,8 +18,62 @@ struct PermissionCallback
 	std::function<TArray<FString>(const FString&, int*)> callback;
 };
 
+struct PermissionGroupUpdatedCallback
+{
+	PermissionGroupUpdatedCallback(FString CallbackName, std::function<void(const FString&, int)> callback)
+		: SubscriberUID(std::move(CallbackName)),
+		callback(std::move(callback))
+	{
+	}
+
+	FString SubscriberUID;
+	std::function<void(const FString&, int)> callback;
+};
+
 namespace Permissions
 {
+#pragma region Subscribers
+	std::vector<std::shared_ptr<PermissionGroupUpdatedCallback>> permissionGroupUpdatedSubscribers;
+
+	/// <summary>
+	/// Subscribes to the PermissionGroupUpdatedCallback
+	/// 
+	/// CallbackName is a unique identifier for the subscriber to be able to unsubscribe using a combination of PluginName and ServerID is recommended
+	/// </summary>
+	/// <param name="CallbackName"></param>
+	/// <param name="callback"></param>
+	void SubscribePermissionGroupUpdatedCallback(FString CallbackName, const std::function<void(const FString&, int)>& callback)
+	{
+		permissionGroupUpdatedSubscribers.push_back(std::make_shared<PermissionGroupUpdatedCallback>(CallbackName, callback));
+	}
+
+	/// <summary>
+	/// Removes the subscriber from the list of subscribers
+	/// </summary>
+	/// <param name="CallbackName"></param>
+	void UnSubscribePermissionGroupUpdatedCallback(FString CallbackName)
+	{
+		auto iter = std::find_if(permissionGroupUpdatedSubscribers.begin(), permissionGroupUpdatedSubscribers.end(),
+			[&CallbackName](const std::shared_ptr<PermissionGroupUpdatedCallback>& data) -> bool {return data->SubscriberUID == CallbackName; });
+
+		if (iter != permissionGroupUpdatedSubscribers.end())
+			permissionGroupUpdatedSubscribers.erase(std::remove(permissionGroupUpdatedSubscribers.begin(), permissionGroupUpdatedSubscribers.end(), *iter), permissionGroupUpdatedSubscribers.end());
+	}
+
+	/// <summary>
+	/// Processes the list of subscribers and notifies them of the change
+	/// </summary>
+	/// <param name="eos_id"></param>
+	/// <param name="tribeid"></param>
+	void NotifySubscribers(const FString& eos_id, int tribeid)
+	{
+		for (const auto& subscriber : permissionGroupUpdatedSubscribers)
+		{
+			subscriber->callback(eos_id, tribeid);
+		}
+	}
+#pragma endregion Subscribers
+
 	std::vector<std::shared_ptr<PermissionCallback>> playerPermissionCallbacks;
 	void AddPlayerPermissionCallback(FString CallbackName, bool onlyCheckOnline, bool cacheBySteamId, bool cacheByTribe, const std::function<TArray<FString>(const FString&, int*)>& callback) {
 		playerPermissionCallbacks.push_back(std::make_shared<PermissionCallback>(CallbackName, onlyCheckOnline, cacheBySteamId, cacheByTribe, callback));
@@ -179,41 +233,49 @@ namespace Permissions
 
 	std::optional<std::string> AddPlayerToGroup(const FString& eos_id, const FString& group)
 	{
+		NotifySubscribers(eos_id, 0);
 		return database->AddPlayerToGroup(eos_id, group);
 	}
 
 	std::optional<std::string> RemovePlayerFromGroup(const FString& eos_id, const FString& group)
 	{
+		NotifySubscribers(eos_id, 0);
 		return database->RemovePlayerFromGroup(eos_id, group);
 	}
 
 	std::optional<std::string> AddPlayerToTimedGroup(const FString& eos_id, const FString& group, int secs, int delaySecs)
 	{
+		NotifySubscribers(eos_id, 0);
 		return database->AddPlayerToTimedGroup(eos_id, group, secs, delaySecs);
 	}
 
 	std::optional<std::string> RemovePlayerFromTimedGroup(const FString& eos_id, const FString& group)
 	{
+		NotifySubscribers(eos_id, 0);
 		return database->RemovePlayerFromTimedGroup(eos_id, group);
 	}
 
 	std::optional<std::string> AddTribeToGroup(int tribeId, const FString& group)
 	{
+		NotifySubscribers(L"", tribeId);
 		return database->AddTribeToGroup(tribeId, group);
 	}
 
 	std::optional<std::string> RemoveTribeFromGroup(int tribeId, const FString& group)
 	{
+		NotifySubscribers(L"", tribeId);
 		return database->RemoveTribeFromGroup(tribeId, group);
 	}
 
 	std::optional<std::string> AddTribeToTimedGroup(int tribeId, const FString& group, int secs, int delaySecs)
 	{
+		NotifySubscribers(L"", tribeId);
 		return database->AddTribeToTimedGroup(tribeId, group, secs, delaySecs);
 	}
 
 	std::optional<std::string> RemoveTribeFromTimedGroup(int tribeId, const FString& group)
 	{
+		NotifySubscribers(L"", tribeId);
 		return database->RemoveTribeFromTimedGroup(tribeId, group);
 	}
 	
