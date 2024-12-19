@@ -102,9 +102,9 @@ namespace Permissions
 		else if (!HideAllPlayerSuccessMessages && SendMessagesAsNotification) {
 			AsaApi::GetApiUtils().SendNotification(shooter_controller, FColorList::Green, TextSize, DisplayTime, nullptr, message);
 		}
-		else if (!HideAllPlayerSuccessMessages{
+		else if (!HideAllPlayerSuccessMessages) {
 			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green, message);
-			}
+		}
 	}
 
 	void AddPlayerToGroupCmd(APlayerController* player_controller, FString* cmd, bool)
