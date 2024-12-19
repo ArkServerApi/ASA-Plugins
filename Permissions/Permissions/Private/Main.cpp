@@ -146,7 +146,7 @@ namespace Permissions
 			return "Parsing error";
 		}
 
-		return database->RemovePlayerFromGroup(eos_id, group);
+		return RemovePlayerFromGroup(eos_id, group);
 	}
 
 	void RemovePlayerFromGroupCmd(APlayerController* player_controller, FString* cmd, bool)
@@ -226,7 +226,7 @@ namespace Permissions
 		const FString eos_id = *parsed[1];
 		const FString group = *parsed[2];
 
-		return database->RemovePlayerFromTimedGroup(eos_id, group);
+		return RemovePlayerFromTimedGroup(eos_id, group);
 	}
 
 	void RemovePlayerFromTimedGroupCmd(APlayerController* player_controller, FString* cmd, bool)
@@ -311,7 +311,7 @@ namespace Permissions
 			return "Parsing error";
 		}
 
-		return database->RemoveTribeFromGroup(tribe_id, group);
+		return RemoveTribeFromGroup(tribe_id, group);
 	}
 
 	void RemoveTribeFromGroupCmd(APlayerController* player_controller, FString* cmd, bool)
@@ -403,7 +403,7 @@ namespace Permissions
 			return "Parsing error";
 		}
 
-		return database->RemoveTribeFromTimedGroup(tribe_id, group);
+		return RemoveTribeFromTimedGroup(tribe_id, group);
 	}
 
 	void RemoveTribeFromTimedGroupCmd(APlayerController* player_controller, FString* cmd, bool)
