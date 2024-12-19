@@ -22,6 +22,11 @@ namespace Permissions
 	nlohmann::json config;
 	time_t lastDatabaseSyncTime = time(0);
 	int SyncFrequency = 60;
+	bool HideAllPlayerSuccessMessages = false;
+	bool SendMessagesAsNotification = false;
+	float TextSize = 1.5f;
+	float DisplayTime = 3.0f;
+
 
 	FTribeData* GetTribeData(AShooterPlayerController* playerController)
 	{
@@ -35,10 +40,10 @@ namespace Permissions
 		return nullptr;
 	}
 
-	TArray<FString> GetTribeDefaultGroups(FTribeData* tribeData) 
+	TArray<FString> GetTribeDefaultGroups(FTribeData* tribeData)
 	{
 		TArray<FString> groups;
-		if (tribeData) 
+		if (tribeData)
 		{
 			auto world = AsaApi::GetApiUtils().GetWorld();
 			auto tribeId = tribeData->TribeIDField();
@@ -86,23 +91,33 @@ namespace Permissions
 
 		return AddPlayerToGroup(eos_id, group);
 	}
+	void HandlePlayerMessage(APlayerController* player_controller, auto result, auto message) {
+		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
+		if (SendMessagesAsNotification && result.has_value()) {
+			AsaApi::GetApiUtils().SendNotification(shooter_controller, FColorList::Red, TextSize, DisplayTime, nullptr, result.value().c_str());
+		}
+		else if (!SendMessagesAsNotification && result.has_value()) {
+			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, result.value().c_str());
+		}
+		else if (!HideAllPlayerSuccessMessages && SendMessagesAsNotification) {
+			AsaApi::GetApiUtils().SendNotification(shooter_controller, FColorList::Green, TextSize, DisplayTime, nullptr, message);
+		}
+		else if (!HideAllPlayerSuccessMessages{
+			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green, message);
+			}
+	}
 
 	void AddPlayerToGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = AddPlayerToGroup(*cmd);
-		if (!result.has_value())
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green, "Successfully added player");
-		else
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, result.value().c_str());
+		HandlePlayerMessage(player_controller, result, "Successfully added player.");
 	}
 
 	void AddPlayerToGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
 	{
 		auto result = AddPlayerToGroup(rcon_packet->Body);
 		if (!result.has_value())
-			SendRconReply(rcon_connection, rcon_packet->Id, "Successfully added player");
+			SendRconReply(rcon_connection, rcon_packet->Id, "Successfully added player.");
 		else
 			SendRconReply(rcon_connection, rcon_packet->Id, result.value().c_str());
 	}
@@ -136,21 +151,15 @@ namespace Permissions
 
 	void RemovePlayerFromGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = RemovePlayerFromGroup(*cmd);
-		if (!result.has_value())
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green,
-			                                        "Successfully removed player");
-		else
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, result.value().c_str());
+		HandlePlayerMessage(player_controller, result, "Successfully removed player.");
 	}
 
 	void RemovePlayerFromGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
 	{
 		auto result = RemovePlayerFromGroup(rcon_packet->Body);
 		if (!result.has_value())
-			SendRconReply(rcon_connection, rcon_packet->Id, "Successfully removed player");
+			SendRconReply(rcon_connection, rcon_packet->Id, "Successfully removed player.");
 		else
 			SendRconReply(rcon_connection, rcon_packet->Id, result.value().c_str());
 	}
@@ -192,13 +201,8 @@ namespace Permissions
 
 	void AddPlayerToTimedGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = AddPlayerToTimedGroup(*cmd);
-		if (!result.has_value())
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green, "Successfully added player to timed group.");
-		else
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, result.value().c_str());
+		HandlePlayerMessage(player_controller, result, "Successfully added player to timed group.");
 	}
 
 	void AddPlayerToTimedGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -227,13 +231,9 @@ namespace Permissions
 
 	void RemovePlayerFromTimedGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = RemovePlayerFromTimedGroup(*cmd);
-		if (!result.has_value())
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green, "Successfully removed player from timed group.");
-		else
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, result.value().c_str());
+		HandlePlayerMessage(player_controller, result, "Successfully aremoved player from timed group.");
+
 	}
 
 	void RemovePlayerFromTimedGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -273,20 +273,17 @@ namespace Permissions
 
 	void AddTribeToGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
+
 
 		auto result = AddTribeToGroup(*cmd);
-		if (!result.has_value())
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green, "Successfully added tribe");
-		else
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, result.value().c_str());
+		HandlePlayerMessage(player_controller, result, "Successfully added tribe.");
 	}
 
 	void AddTribeToGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
 	{
 		auto result = AddTribeToGroup(rcon_packet->Body);
 		if (!result.has_value())
-			SendRconReply(rcon_connection, rcon_packet->Id, "Successfully added tribe");
+			SendRconReply(rcon_connection, rcon_packet->Id, "Successfully added tribe.");
 		else
 			SendRconReply(rcon_connection, rcon_packet->Id, result.value().c_str());
 	}
@@ -319,21 +316,15 @@ namespace Permissions
 
 	void RemoveTribeFromGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = RemoveTribeFromGroup(*cmd);
-		if (!result.has_value())
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green,
-				"Successfully removed tribe");
-		else
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, result.value().c_str());
+		HandlePlayerMessage(player_controller, result, "Successfully removed tribe.");
 	}
 
 	void RemoveTribeFromGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
 	{
 		auto result = RemoveTribeFromGroup(rcon_packet->Body);
 		if (!result.has_value())
-			SendRconReply(rcon_connection, rcon_packet->Id, "Successfully removed tribe");
+			SendRconReply(rcon_connection, rcon_packet->Id, "Successfully removed tribe.");
 		else
 			SendRconReply(rcon_connection, rcon_packet->Id, result.value().c_str());
 	}
@@ -376,13 +367,8 @@ namespace Permissions
 
 	void AddTribeToTimedGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = AddTribeToTimedGroup(*cmd);
-		if (!result.has_value())
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green, "Successfully added tribe to timed group.");
-		else
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, result.value().c_str());
+		HandlePlayerMessage(player_controller, result, "Successfully added tribe to timed group.");
 	}
 
 	void AddTribeToTimedGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -422,13 +408,8 @@ namespace Permissions
 
 	void RemoveTribeFromTimedGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = RemoveTribeFromTimedGroup(*cmd);
-		if (!result.has_value())
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green, "Successfully removed tribe from timed group.");
-		else
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, result.value().c_str());
+		HandlePlayerMessage(player_controller, result, "Successfully removed tribe from timed group.");
 	}
 
 	void RemoveTribeFromTimedGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -457,13 +438,10 @@ namespace Permissions
 
 	void AddGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
+
 
 		auto result = AddGroupCommand(*cmd);
-		if (!result.has_value())
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green, "Successfully added group");
-		else
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, result.value().c_str());
+		HandlePlayerMessage(player_controller, result, "Successfully added group");
 	}
 
 	void AddGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -492,13 +470,8 @@ namespace Permissions
 
 	void RemoveGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = RemoveGroupCommand(*cmd);
-		if (!result.has_value())
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green, "Successfully removed group");
-		else
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, result.value().c_str());
+		HandlePlayerMessage(player_controller, result, "Successfully removed group");
 	}
 
 	void RemoveGroupRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -528,13 +501,10 @@ namespace Permissions
 
 	void GroupGrantPermissionCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
+
 
 		auto result = GroupGrantPermission(*cmd);
-		if (!result.has_value())
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green, "Successfully granted permission");
-		else
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, result.value().c_str());
+		HandlePlayerMessage(player_controller, result, "Successfully granted permission");
 	}
 
 	void GroupGrantPermissionRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -564,14 +534,8 @@ namespace Permissions
 
 	void GroupRevokePermissionCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
-		const auto shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
-
 		auto result = GroupRevokePermission(*cmd);
-		if (!result.has_value())
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green,
-			                                        "Successfully revoked permission");
-		else
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, result.value().c_str());
+		HandlePlayerMessage(player_controller, result, "Successfully revoked permission");
 	}
 
 	void GroupRevokePermissionRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld*)
@@ -679,12 +643,12 @@ namespace Permissions
 			if (groups_str.Len() > 0)
 				groups_str += "\n";
 			groups_str += current_group.GroupName;
-			if (current_group.DelayUntilTime > 0 && current_group.DelayUntilTime > nowSecs) 
+			if (current_group.DelayUntilTime > 0 && current_group.DelayUntilTime > nowSecs)
 			{
 				auto diff = current_group.DelayUntilTime - nowSecs;
 				groups_str += FString::Format(" - Activates in {}", getTimeLeft(diff, 2));
 			}
-			else if (current_group.ExpireAtTime > nowSecs) 
+			else if (current_group.ExpireAtTime > nowSecs)
 			{
 				auto diff = current_group.ExpireAtTime - nowSecs;
 				groups_str += FString::Format(" - Ends in {}", getTimeLeft(diff, 2));
@@ -692,7 +656,7 @@ namespace Permissions
 		}
 
 		auto world = AsaApi::GetApiUtils().GetWorld();
-		if (world) 
+		if (world)
 		{
 			const auto& player_controllers = world->PlayerControllerListField();
 			for (TWeakObjectPtr<APlayerController> player_controller : player_controllers)
@@ -704,10 +668,10 @@ namespace Permissions
 					if (shooter_pc)
 					{
 						auto tribeData = Permissions::GetTribeData(shooter_pc);
-						if (tribeData) 
+						if (tribeData)
 						{
 							auto tribeId = tribeData->TribeIDField();
-							if (tribeId > 0) 
+							if (tribeId > 0)
 							{
 								auto defaultTribeGroups = GetTribeDefaultGroups(tribeData);
 								FString defaults = "";
@@ -912,17 +876,63 @@ namespace Permissions
 			lastDatabaseSyncTime = time(0);
 		}
 	}
-	
+
 	void ReadConfig()
 	{
 		const std::string config_path = GetConfigPath();
-		std::ifstream file{config_path};
+		std::ifstream file{ config_path };
 		if (!file.is_open())
 			throw std::runtime_error("Can't open config.json");
 
 		file >> config;
 
+		HideAllPlayerSuccessMessages = config.value("HideAllPlayerSuccessMessages", false);
+		SendMessagesAsNotification = config.value("SendMessagesAsNotification", false);
+
+		TextSize = config.value("TextSize", 1.5f);
+		DisplayTime = config.value("DisplayTime", 3.0f);
+
 		file.close();
+	}
+
+	void ReloadConfig(APlayerController* player_controller, FString* /*unused*/, bool /*unused*/)
+	{
+		auto* shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
+
+		try
+		{
+			ReadConfig();
+		}
+		catch (const std::exception& error)
+		{
+			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, "Failed to reload config");
+
+			Log::GetLog()->error(error.what());
+			return;
+		}
+
+		AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green, "Reloaded config");
+	}
+
+	void ReloadConfigRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_packet, UWorld* /*unused*/)
+	{
+		FString reply;
+
+		try
+		{
+			ReadConfig();
+		}
+		catch (const std::exception& error)
+		{
+			Log::GetLog()->error(error.what());
+
+			reply = error.what();
+			rcon_connection->SendMessageW(rcon_packet->Id, 0, &reply);
+			return;
+		}
+
+		reply = "Reloaded config";
+		rcon_connection->SendMessageW(rcon_packet->Id, 0, &reply);
 	}
 
 	void Load()
@@ -932,6 +942,7 @@ namespace Permissions
 		try
 		{
 			ReadConfig();
+
 			SyncFrequency = config.value("ClusterSyncTime", 60);
 			if (SyncFrequency < 20)
 				SyncFrequency = 20;
@@ -947,11 +958,11 @@ namespace Permissions
 		{
 			database = std::make_unique<MySql>(
 				config.value("MysqlHost", ""),
-			                                   config.value("MysqlUser", ""),
-			                                   config.value("MysqlPass", ""),
-			                                   config.value("MysqlDB", ""),
+				config.value("MysqlUser", ""),
+				config.value("MysqlPass", ""),
+				config.value("MysqlDB", ""),
 				config.value("MysqlPort", 3306),
-			                                   config.value("MysqlPlayersTable", "Players"),
+				config.value("MysqlPlayersTable", "Players"),
 				config.value("MysqlGroupsTable", "PermissionGroups"),
 				config.value("MysqlTribesTable", "TribePermissions"));
 		}
@@ -998,6 +1009,9 @@ namespace Permissions
 		AsaApi::GetCommands().AddRconCommand("Permissions.AddTribeTimed", &AddTribeToTimedGroupRcon);
 		AsaApi::GetCommands().AddRconCommand("Permissions.RemoveTribeTimed", &RemoveTribeFromTimedGroupRcon);
 		AsaApi::GetCommands().AddRconCommand("Permissions.TribeGroups", &TribeGroupsRcon);
+
+		AsaApi::GetCommands().AddConsoleCommand("Permissions.Reload", &ReloadConfig);
+		AsaApi::GetCommands().AddRconCommand("Permissions.Reload", &ReloadConfigRcon);
 
 		AsaApi::GetCommands().AddChatCommand("/groups", &ShowMyGroupsChat);
 

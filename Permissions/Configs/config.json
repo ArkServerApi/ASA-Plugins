@@ -1,10 +1,14 @@
 {
-  "UseMysql": false,
-  "MysqlHost": "localhost",
-  "MysqlUser": "root",
-  "MysqlPass": "pass",
-  "MysqlDB": "arkdb",
-  "MysqlPort": 3306,
-  "DbPathOverride": "",
-  "ClusterSyncTime": 60
+    "UseMysql": false,
+    "MysqlHost": "localhost",
+    "MysqlUser": "root",
+    "MysqlPass": "pass",
+    "MysqlDB": "arkdb",
+    "MysqlPort": 3306,
+    "DbPathOverride": "",
+    "ClusterSyncTime": 60,
+    "HideAllPlayerSuccessMessages": false,
+    "SendMessagesAsNotification": false,
+    "TextSize": 1.5,
+    "DisplayTime": 3.0
 }
