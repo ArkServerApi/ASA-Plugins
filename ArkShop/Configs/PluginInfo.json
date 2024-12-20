@@ -1,7 +1,7 @@
 {
   "FullName": "Ark:SA ArkShop",
   "Description": "Shop, Currency & Kits",
-  "Version": 1.08,
+  "Version": 1.09,
   "MinApiVersion": 1.15,
   "Dependencies": [
     "Permissions"
