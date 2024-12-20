@@ -421,7 +421,7 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 			if (item)
 			{
 				if (ArkShop::config["General"].value("CryoLimitedTime", false))
-					item->AddItemDurability((item->ItemDurabilityField() - 3600) * -1);
+					item->AddItemDurability((item->ItemDurabilityField() - 3600) * -1, true);
 
 				FCustomItemData customItemData = GetDinoCustomItemData(dino, saddle);
 				item->SetCustomItemData(&customItemData);
