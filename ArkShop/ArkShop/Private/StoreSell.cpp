@@ -189,7 +189,9 @@ namespace ArkShop::StoreSell
 
 	void ShowItems(AShooterPlayerController* player_controller, FString* message, int, int senderPlatform)
 	{
-		if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(senderPlatform))
+		const FString& eos_id = AsaApi::GetApiUtils().GetEOSIDFromController(player_controller);
+
+		if (!eos_id.IsEmpty() && AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(eos_id))
 			return;
 
 		TArray<FString> parsed;

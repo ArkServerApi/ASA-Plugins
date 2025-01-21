@@ -17,9 +17,9 @@
 
 namespace ArkShopUI
 {
-	inline ARK_API bool RequestUI(AShooterPlayerController* player_controller)
+	inline ARK_API bool RequestUI(const FString& eos_id)
 	{
-		using T = bool (*) (AShooterPlayerController*);
+		using T = bool (*) (const FString&);
 
 		HMODULE hmodule = GetModuleHandleA("ArkShopUI.dll");
 		if (!hmodule)
@@ -27,12 +27,12 @@ namespace ArkShopUI
 
 		T addr = (T)GetProcAddress(hmodule, "RequestUI");
 
-		return addr(player_controller);
+		return addr(eos_id);
 	}
 
-	inline ARK_API bool CanUseMod(int platform)
+	inline ARK_API bool CanUseMod(const FString& eos_id)
 	{
-		using T = bool (*) (int);
+		using T = bool (*) (const FString&);
 
 		HMODULE hmodule = GetModuleHandleA("ArkShopUI.dll");
 		if (!hmodule)
@@ -40,7 +40,7 @@ namespace ArkShopUI
 
 		T addr = (T)GetProcAddress(hmodule, "CanUseMod");
 
-		return addr(platform);
+		return addr(eos_id);
 	}
 
 	inline ARK_API bool Reload()

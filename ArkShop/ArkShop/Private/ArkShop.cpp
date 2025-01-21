@@ -74,7 +74,16 @@ void ArkShop::PostToDiscord(const std::wstring log)
 
 	FString msg = L"{{\"content\":\"```stylus\\n{}```\",\"username\":\"{}\",\"avatar_url\":null}}";
 	FString output = FString::Format(*msg, log, ArkShop::discord_sender_name);
-	API::Requests::Get().CreatePostRequest(ArkShop::discord_webhook_url.ToString(), [](bool, std::string) {}, API::Tools::Utf8Encode(*output), "application/json");
+
+	auto myCallback = [](bool, std::string, std::unordered_map<std::string, std::string>) {};
+
+	bool result = API::Requests::Get().CreatePostRequest(
+		ArkShop::discord_webhook_url.ToString(),
+		myCallback,
+		API::Tools::Utf8Encode(*output),
+		"application/json"
+	);
+	//API::Requests::Get().CreatePostRequest(ArkShop::discord_webhook_url.ToString(), [](bool, std::string) {}, API::Tools::Utf8Encode(*output), "application/json");
 }
 
 float ArkShop::getStatValue(float StatModifier, float InitialValueConstant, float RandomizerRangeMultiplier, float StateModifierScale, bool bDisplayAsPercent)
@@ -421,7 +430,7 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 			if (item)
 			{
 				if (ArkShop::config["General"].value("CryoLimitedTime", false))
-					item->AddItemDurability((item->ItemDurabilityField() - 3600) * -1, true);
+					item->AddItemDurability((item->ItemDurabilityField() - 3600) * -1, false);
 
 				FCustomItemData customItemData = GetDinoCustomItemData(dino, saddle);
 				item->SetCustomItemData(&customItemData);
@@ -686,6 +695,7 @@ void Load()
 {
 	Log::Get().Init("ArkShop");
 	AsaApi::GetApiUtils().SetMessagingManager<AsaApiUtilsMessagingManager>();
+	//AsaApi::GetApiUtils().SetMessagingManager<MessagingManager>();
 
 	try
 	{

@@ -104,22 +104,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Libs;$(SolutionDir)..\..\ARK-API-Stable-Libs</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /I  /Y "$(TargetDir)$(ProjectName).lib" "$(SolutionDir)out_lib\"
-xcopy /I  /Y "$(TargetDir)$(ProjectName).lib" "$(SolutionDir)..\..\ARK-API-Stable-Libs\"
-xcopy /I  /Y "$(TargetDir)$(ProjectName).lib" "$(SolutionDir)..\..\ARK-API-Stable-Libs\1.00\"
-
-copy "$(SolutionDir)$(PlatformName)\$(ConfigurationName)\$(ProjectName).dll" "$(SolutionDir)$(PlatformName)\$(ConfigurationName)\$(ProjectName).dll.ArkApi" /y
-
-if not exist "F:\ASA-Dedicated\asa-server\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\" mkdir "F:\ASA-Dedicated\asa-server\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\"
-copy "$(SolutionDir)$(PlatformName)\$(ConfigurationName)\*.ArkApi" "F:\ASA-Dedicated\asa-server\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\" /y
-copy "$(SolutionDir)$(PlatformName)\$(ConfigurationName)\*.pdb" "F:\ASA-Dedicated\asa-server\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\" /y
-copy "$(SolutionDir)ArkConfigs\*.*" "F:\ASA-Dedicated\asa-server\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\" /y
-
-if not exist "F:\ASA-Dedicated\asa-server2\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\" mkdir "F:\ASA-Dedicated\asa-server2\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\"
-copy "$(SolutionDir)$(PlatformName)\$(ConfigurationName)\*.ArkApi" "F:\ASA-Dedicated\asa-server2\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\" /y
-copy "$(SolutionDir)$(PlatformName)\$(ConfigurationName)\*.pdb" "F:\ASA-Dedicated\asa-server2\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\" /y
-copy "$(SolutionDir)ArkConfigs\*.*" "F:\ASA-Dedicated\asa-server2\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\" /y
-
+      <Command>copy "$(SolutionDir)$(PlatformName)\$(ConfigurationName)\$(ProjectName).dll" "$(SolutionDir)$(PlatformName)\$(ConfigurationName)\$(ProjectName).dll.ArkApi" /y
 
 if exist "E:\ASAdata\Servers\Server1\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\" copy "$(SolutionDir)$(PlatformName)\$(ConfigurationName)\*.ArkApi" "E:\ASAdata\Servers\Server1\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\" /y
 if exist "E:\ASAdata\Servers\Server1\ShooterGame\Binaries\Win64\ArkApi\Plugins\$(ProjectName)\" copy "$(SolutionDir)$(PlatformName)\$(ConfigurationName)\*.pdb" "E:\ASAdata\Servers\Server1\ShooterGame\Binaries\Win64\" /y
