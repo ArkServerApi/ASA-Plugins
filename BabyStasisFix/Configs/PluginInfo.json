@@ -1,0 +1,6 @@
+{
+  "FullName": "Ark:SA Baby Stasis Fix",
+  "Description": "Unstasis the babies, to prevent the progress loose on server restart.",
+  "Version": 1.00,
+  "MinApiVersion": 1.17
+}
