@@ -83,7 +83,6 @@ void ArkShop::PostToDiscord(const std::wstring log)
 		API::Tools::Utf8Encode(*output),
 		"application/json"
 	);
-	//API::Requests::Get().CreatePostRequest(ArkShop::discord_webhook_url.ToString(), [](bool, std::string) {}, API::Tools::Utf8Encode(*output), "application/json");
 }
 
 float ArkShop::getStatValue(float StatModifier, float InitialValueConstant, float RandomizerRangeMultiplier, float StateModifierScale, bool bDisplayAsPercent)
@@ -255,141 +254,141 @@ FCustomItemData ArkShop::GetDinoCustomItemData(APrimalDinoCharacter* dino, UPrim
 	return customItemData;
 }
 
-//void HandleStryder(APrimalDinoCharacter* dino, int stryderhead, int stryderchest)
-//{
-//	if (stryderhead >= 0 && stryderhead < 3)
-//	{
-//		FString attachmentBP("");
-//		switch (stryderhead)
-//		{
-//		case 0:
-//			attachmentBP = L"Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderHarvester.PrimalItemArmor_TekStriderHarvester'";
-//			break;
-//		case 1:
-//			attachmentBP = "Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderSilenceCannon.PrimalItemArmor_TekStriderSilenceCannon'";
-//			break;
-//		case 2:
-//			attachmentBP = "Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderMachinegun.PrimalItemArmor_TekStriderMachinegun'";
-//			break;
-//		case 3:
-//			attachmentBP = "Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderRadar.PrimalItemArmor_TekStriderRadar'";
-//			break;
-//		}
-//
-//		UPrimalItem* head = dino->MyInventoryComponentField()->GetEquippedItemOfType(EPrimalEquipmentType::Hat);
-//		if (head)
-//		{
-//			head->bForceDropDestruction().Set(true);
-//			head->RemoveItemFromInventory(true, false);
-//
-//			UClass* Class = UVictoryCore::BPLoadClass(&attachmentBP);
-//			UPrimalItem* item = UPrimalItem::AddNewItem(Class, dino->MyInventoryComponentField(), true, true, 1, true, 1, false, 0, false, nullptr, 0, false, false);
-//			if (item)
-//			{
-//				UProperty* setHeadAttachment = dino->FindProperty(FName("set head attachment", EFindName::FNAME_Add));
-//				if (setHeadAttachment)
-//					setHeadAttachment->Set(dino, true);
-//
-//				UProperty* headAttachmentIndex = dino->FindProperty(FName("head attachment index", EFindName::FNAME_Add));
-//				if (headAttachmentIndex)
-//					headAttachmentIndex->Set(dino, stryderhead);
-//			}
-//			else
-//			{
-//				dino->Destroy(false, false);
-//				return;
-//			}
-//		}
-//	}
-//
-//	if (stryderchest >= 0 && stryderchest < 4)
-//	{
-//		FString attachmentBP("");
-//		switch (stryderchest)
-//		{
-//		case 0:
-//			attachmentBP = L"Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderShield.PrimalItemArmor_TekStriderShield'";
-//			break;
-//		case 1:
-//			attachmentBP = "Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderOnesidedShield.PrimalItemArmor_TekStriderOnesidedShield'";
-//			break;
-//		case 2:
-//			attachmentBP = "Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderLargeCannon.PrimalItemArmor_TekStriderLargeCannon'";
-//			break;
-//		case 3:
-//			attachmentBP = "Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderSaddlebags.PrimalItemArmor_TekStriderSaddlebags'";
-//			break;
-//		}
-//
-//		UPrimalItem* chest = dino->MyInventoryComponentField()->GetEquippedItemOfType(EPrimalEquipmentType::Shirt);
-//		if (chest)
-//		{
-//			chest->bForceDropDestruction().Set(true);
-//			chest->RemoveItemFromInventory(true, false);
-//
-//			UClass* Class = UVictoryCore::BPLoadClass(&attachmentBP);
-//			UPrimalItem* item = UPrimalItem::AddNewItem(Class, dino->MyInventoryComponentField(), true, true, 1, true, 1, false, 0, false, nullptr, 0, false, false);
-//			if (item)
-//			{
-//				UProperty* setChestAttachment = dino->FindProperty(FName("set chest attachment", EFindName::FNAME_Add));
-//				if (setChestAttachment)
-//					setChestAttachment->Set(dino, true);
-//
-//				UProperty* chestAttachmentIndex = dino->FindProperty(FName("chest attachment index", EFindName::FNAME_Add));
-//				if (chestAttachmentIndex)
-//					chestAttachmentIndex->Set(dino, stryderchest);
-//			}
-//			else
-//			{
-//				dino->Destroy(false, false);
-//				return;
-//			}
-//		}
-//	}
-//}
-//
-//void HandleGacha(APrimalDinoCharacter* dino, nlohmann::json resourceOverrides)
-//{
-//	if (resourceOverrides.empty())
-//		return;
-//
-//	struct Gacha_ResourceStruct
-//	{
-//		UClass* Class;
-//		float BaseQuantity;
-//	};
-//
-//	TArray<Gacha_ResourceStruct> X;
-//	for (auto Iter = resourceOverrides.begin(); Iter != resourceOverrides.end(); ++Iter)
-//	{
-//		FString tempResource(Iter.key());
-//		UClass* tempClass = UVictoryCore::BPLoadClass(&tempResource);
-//		X.Emplace(Gacha_ResourceStruct{ tempClass, Iter.value() });
-//	}
-//
-//	UProperty* resourceProduction = dino->FindProperty(FName("ResourceProduction", EFindName::FNAME_Find));
-//	if (resourceProduction)
-//	{
-//		if (dino->StaticClass()->HasProperty(resourceProduction))
-//		{
-//			auto* currentList = ((TArray<Gacha_ResourceStruct>*)(dino + resourceProduction->Offset_InternalField()));
-//			if (currentList)
-//			{
-//				int counter = 0;
-//				for (auto Iter = currentList->CreateIterator(); Iter; ++Iter)
-//				{
-//					if (X.IsValidIndex(counter))
-//					{
-//						Iter->Class = X[counter].Class;
-//						Iter->BaseQuantity = X[counter].BaseQuantity;
-//					}
-//
-//					counter += 1;
-//				}
-//			}
-//		}
-//	}
-//}
+void HandleStryder(APrimalDinoCharacter* dino, int stryderhead, int stryderchest)
+{
+	if (stryderhead >= 0 && stryderhead < 3)
+	{
+		FString attachmentBP("");
+		switch (stryderhead)
+		{
+		case 0:
+			attachmentBP = L"Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderHarvester.PrimalItemArmor_TekStriderHarvester'";
+			break;
+		case 1:
+			attachmentBP = "Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderSilenceCannon.PrimalItemArmor_TekStriderSilenceCannon'";
+			break;
+		case 2:
+			attachmentBP = "Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderMachinegun.PrimalItemArmor_TekStriderMachinegun'";
+			break;
+		case 3:
+			attachmentBP = "Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderRadar.PrimalItemArmor_TekStriderRadar'";
+			break;
+		}
+
+		UPrimalItem* head = dino->MyInventoryComponentField()->GetEquippedItemOfType(EPrimalEquipmentType::Hat);
+		if (head)
+		{
+			head->bForceDropDestruction().Set(true);
+			head->RemoveItemFromInventory(true, false);
+
+			UClass* Class = UVictoryCore::BPLoadClass(attachmentBP);
+			UPrimalItem* item = UPrimalItem::AddNewItem(Class, dino->MyInventoryComponentField(), true, true, 1, true, 1, false, 0, false, nullptr, 0, false, false, true);
+			if (item)
+			{
+				FProperty* setHeadAttachment = dino->FindProperty(FName("set head attachment", EFindName::FNAME_Add));
+				if (setHeadAttachment)
+					setHeadAttachment->Set(dino, true);
+
+				FProperty* headAttachmentIndex = dino->FindProperty(FName("head attachment index", EFindName::FNAME_Add));
+				if (headAttachmentIndex)
+					headAttachmentIndex->Set(dino, stryderhead);
+			}
+			else
+			{
+				dino->Destroy(false, false);
+				return;
+			}
+		}
+	}
+
+	if (stryderchest >= 0 && stryderchest < 4)
+	{
+		FString attachmentBP("");
+		switch (stryderchest)
+		{
+		case 0:
+			attachmentBP = L"Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderShield.PrimalItemArmor_TekStriderShield'";
+			break;
+		case 1:
+			attachmentBP = "Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderOnesidedShield.PrimalItemArmor_TekStriderOnesidedShield'";
+			break;
+		case 2:
+			attachmentBP = "Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderLargeCannon.PrimalItemArmor_TekStriderLargeCannon'";
+			break;
+		case 3:
+			attachmentBP = "Blueprint'/Game/Genesis2/CoreBlueprints/Items/Saddle/PrimalItemArmor_TekStriderSaddlebags.PrimalItemArmor_TekStriderSaddlebags'";
+			break;
+		}
+
+		UPrimalItem* chest = dino->MyInventoryComponentField()->GetEquippedItemOfType(EPrimalEquipmentType::Shirt);
+		if (chest)
+		{
+			chest->bForceDropDestruction().Set(true);
+			chest->RemoveItemFromInventory(true, false);
+
+			UClass* Class = UVictoryCore::BPLoadClass(attachmentBP);
+			UPrimalItem* item = UPrimalItem::AddNewItem(Class, dino->MyInventoryComponentField(), true, true, 1, true, 1, false, 0, false, nullptr, 0, false, false, true);
+			if (item)
+			{
+				FProperty* setChestAttachment = dino->FindProperty(FName("set chest attachment", EFindName::FNAME_Add));
+				if (setChestAttachment)
+					setChestAttachment->Set(dino, true);
+
+				FProperty* chestAttachmentIndex = dino->FindProperty(FName("chest attachment index", EFindName::FNAME_Add));
+				if (chestAttachmentIndex)
+					chestAttachmentIndex->Set(dino, stryderchest);
+			}
+			else
+			{
+				dino->Destroy(false, false);
+				return;
+			}
+		}
+	}
+}
+
+void HandleGacha(APrimalDinoCharacter* dino, nlohmann::json resourceOverrides)
+{
+	if (resourceOverrides.empty())
+		return;
+
+	struct Gacha_ResourceStruct
+	{
+		UClass* Class;
+		float BaseQuantity;
+	};
+
+	TArray<Gacha_ResourceStruct> X;
+	for (auto Iter = resourceOverrides.begin(); Iter != resourceOverrides.end(); ++Iter)
+	{
+		FString tempResource(Iter.key());
+		UClass* tempClass = UVictoryCore::BPLoadClass(tempResource);
+		X.Emplace(Gacha_ResourceStruct{ tempClass, Iter.value() });
+	}
+
+	FProperty* resourceProduction = dino->FindProperty(FName("ResourceProduction", EFindName::FNAME_Find));
+	if (resourceProduction)
+	{
+		if (dino->StaticClass()->HasProperty(resourceProduction))
+		{
+			auto* currentList = ((TArray<Gacha_ResourceStruct>*)(dino + resourceProduction->Offset_InternalField()));
+			if (currentList)
+			{
+				int counter = 0;
+				for (auto Iter = currentList->CreateIterator(); Iter; ++Iter)
+				{
+					if (X.IsValidIndex(counter))
+					{
+						Iter->Class = X[counter].Class;
+						Iter->BaseQuantity = X[counter].BaseQuantity;
+					}
+
+					counter += 1;
+				}
+			}
+		}
+	}
+}
 
 //Spawns dino or gives in cryopod
 bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, bool neutered, std::string gender, std::string blueprint, std::string saddleblueprint, bool PreventCryo, int stryderhead, int stryderchest, nlohmann::json resourceOverrides)
@@ -399,10 +398,10 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 	APrimalDinoCharacter* dino = AsaApi::GetApiUtils().SpawnDino(player_controller, fblueprint, nullptr, level, true, neutered);
 	if (dino)
 	{
-		/*if (fblueprint.Contains("Blueprint'/Game/Genesis2/Dinos/TekStrider/TekStrider_Character_BP.TekStrider_Character_BP'"))
+		if (fblueprint.Contains("Blueprint'/Game/Genesis2/Dinos/TekStrider/TekStrider_Character_BP.TekStrider_Character_BP'"))
 			HandleStryder(dino, stryderhead, stryderchest);
 		else if (fblueprint.Contains("Blueprint'/Game/Extinction/Dinos/Gacha/Gacha_Character_BP.Gacha_Character_BP'"))
-			HandleGacha(dino, resourceOverrides);*/
+			HandleGacha(dino, resourceOverrides);
 
 		if (dino->bUsesGender()())
 		{
@@ -415,8 +414,8 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 		UPrimalItem* saddle = nullptr;
 		if (saddleblueprint.size() > 0)
 		{
-			FString fblueprint(saddleblueprint.c_str());
-			UClass* saddleClass = UVictoryCore::BPLoadClass(fblueprint);
+			FString fsaddleblueprint(saddleblueprint.c_str());
+			UClass* saddleClass = UVictoryCore::BPLoadClass(fsaddleblueprint);
 			saddle = UPrimalItem::AddNewItem(saddleClass, dino->MyInventoryComponentField(), true, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true);
 		}
 
