@@ -72,7 +72,6 @@ namespace ArkShop::Store
 						for (int i = 0; i < loops; ++i)
 						{
 							TSubclassOf<UPrimalItem> itemClassRef(itemClass);
-							TSubclassOf<UPrimalItem> nullClass;
 							out_items.Add(
 								UPrimalItem::AddNewItem(
 									itemClassRef,
@@ -85,7 +84,7 @@ namespace ArkShop::Store
 									force_blueprint,
 									0,
 									false,
-									nullClass,
+									nullptr,
 									0,
 									false,
 									false,

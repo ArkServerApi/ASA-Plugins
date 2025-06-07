@@ -409,21 +409,20 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 		}
 
 		UPrimalItem* saddle = nullptr;
-		TSubclassOf<UPrimalItem> nullClass;
 		if (saddleblueprint.size() > 0)
 		{
 			FString fblueprint(saddleblueprint.c_str());
 			TSubclassOf<UPrimalItem> saddleClass = UVictoryCore::BPLoadClass(fblueprint);
-			saddle = UPrimalItem::AddNewItem(saddleClass, dino->MyInventoryComponentField(), true, false, 0, false, 0, false, 0, false, nullClass, 0, false, false, true, false);
+			saddle = UPrimalItem::AddNewItem(saddleClass, dino->MyInventoryComponentField(), true, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true, false);
 		}
 
 
 		const FString cryo = FString(ArkShop::config["General"].value("CryoItemPath", "Blueprint'/Game/Extinction/CoreBlueprints/Weapons/PrimalItem_WeaponEmptyCryopod.PrimalItem_WeaponEmptyCryopod'"));
 		TSubclassOf<UPrimalItem> cryoClass = UVictoryCore::BPLoadClass(cryo);
-		
+
 		if (!PreventCryo && cryoClass.uClass != nullptr && ArkShop::config["General"].value("GiveDinosInCryopods", false))
 		{
-			UPrimalItem* item = UPrimalItem::AddNewItem(cryoClass, nullptr, false, false, 0, false, 0, false, 0, false, nullClass, 0, false, false, true, false);
+			UPrimalItem* item = UPrimalItem::AddNewItem(cryoClass, nullptr, false, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true, false);
 			if (item)
 			{
 				if (ArkShop::config["General"].value("CryoLimitedTime", false))
