@@ -71,9 +71,11 @@ namespace ArkShop::Store
 						TArray<UPrimalItem*> out_items{};
 						for (int i = 0; i < loops; ++i)
 						{
+							TSubclassOf<UPrimalItem> itemClassRef(itemClass);
+							TSubclassOf<UPrimalItem> nullClass;
 							out_items.Add(
 								UPrimalItem::AddNewItem(
-									itemClass,
+									itemClassRef,
 									playerInventory,
 									false,
 									false,
@@ -83,10 +85,11 @@ namespace ArkShop::Store
 									force_blueprint,
 									0,
 									false,
-									nullptr,
+									nullClass,
 									0,
 									false,
 									false,
+									true,
 									true
 								)
 							);

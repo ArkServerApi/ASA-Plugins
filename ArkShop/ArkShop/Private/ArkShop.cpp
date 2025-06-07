@@ -74,7 +74,7 @@ void ArkShop::PostToDiscord(const std::wstring log)
 
 	FString msg = L"{{\"content\":\"```stylus\\n{}```\",\"username\":\"{}\",\"avatar_url\":null}}";
 	FString output = FString::Format(*msg, log, ArkShop::discord_sender_name);
-	API::Requests::Get().CreatePostRequest(ArkShop::discord_webhook_url.ToString(), [](bool, std::string) {}, API::Tools::Utf8Encode(*output), "application/json");
+	API::Requests::Get().CreatePostRequest(ArkShop::discord_webhook_url.ToString(), [](bool, std::string, std::unordered_map<std::string, std::string>) {}, API::Tools::Utf8Encode(*output), "application/json");
 }
 
 float ArkShop::getStatValue(float StatModifier, float InitialValueConstant, float RandomizerRangeMultiplier, float StateModifierScale, bool bDisplayAsPercent)
@@ -223,7 +223,12 @@ FCustomItemData ArkShop::GetDinoCustomItemData(APrimalDinoCharacter* dino, UPrim
 	//
 	// Custom Data Classes
 	//
-	customItemData.CustomDataClasses.Add(dinoData.DinoClass);
+	//customItemData.CustomDataClasses.Add(dinoData.DinoClass);
+
+	//
+	//	Custom Data Soft Classes
+	//
+	customItemData.CustomDataSoftClasses.Add(dinoData.DinoClass);
 
 	//
 	// Custom Data Bytes
@@ -404,20 +409,21 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 		}
 
 		UPrimalItem* saddle = nullptr;
+		TSubclassOf<UPrimalItem> nullClass;
 		if (saddleblueprint.size() > 0)
 		{
 			FString fblueprint(saddleblueprint.c_str());
-			UClass* saddleClass = UVictoryCore::BPLoadClass(fblueprint);
-			saddle = UPrimalItem::AddNewItem(saddleClass, dino->MyInventoryComponentField(), true, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true);
+			TSubclassOf<UPrimalItem> saddleClass = UVictoryCore::BPLoadClass(fblueprint);
+			saddle = UPrimalItem::AddNewItem(saddleClass, dino->MyInventoryComponentField(), true, false, 0, false, 0, false, 0, false, nullClass, 0, false, false, true, false);
 		}
 
-		// Use Pelayori's Cryo Storage mod
-		FString cryo = FString(ArkShop::config["General"].value("CryoItemPath", "Blueprint'/Game/Extinction/CoreBlueprints/Weapons/PrimalItem_WeaponEmptyCryopod.PrimalItem_WeaponEmptyCryopod'"));
-		UClass* cryoClass = UVictoryCore::BPLoadClass(cryo);
 
-		if (!PreventCryo && cryoClass != nullptr && ArkShop::config["General"].value("GiveDinosInCryopods", false))
+		const FString cryo = FString(ArkShop::config["General"].value("CryoItemPath", "Blueprint'/Game/Extinction/CoreBlueprints/Weapons/PrimalItem_WeaponEmptyCryopod.PrimalItem_WeaponEmptyCryopod'"));
+		TSubclassOf<UPrimalItem> cryoClass = UVictoryCore::BPLoadClass(cryo);
+		
+		if (!PreventCryo && cryoClass.uClass != nullptr && ArkShop::config["General"].value("GiveDinosInCryopods", false))
 		{
-			UPrimalItem* item = UPrimalItem::AddNewItem(cryoClass, nullptr, false, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true);
+			UPrimalItem* item = UPrimalItem::AddNewItem(cryoClass, nullptr, false, false, 0, false, 0, false, 0, false, nullClass, 0, false, false, true, false);
 			if (item)
 			{
 				if (ArkShop::config["General"].value("CryoLimitedTime", false))
@@ -430,7 +436,7 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 				if (player_controller->GetPlayerInventoryComponent())
 				{
 					UPrimalItem* item2 = player_controller->GetPlayerInventoryComponent()->AddItemObject(item);
-
+					
 					if (item2)
 						success = true;
 				}
