@@ -223,12 +223,12 @@ FCustomItemData ArkShop::GetDinoCustomItemData(APrimalDinoCharacter* dino, UPrim
 	//
 	// Custom Data Classes
 	//
-	//customItemData.CustomDataClasses.Add(dinoData.DinoClass);
+	customItemData.CustomDataClasses.Add(dinoData.DinoClass);
 
 	//
 	//	Custom Data Soft Classes
 	//
-	customItemData.CustomDataSoftClasses.Add(dinoData.DinoClass);
+	//customItemData.CustomDataSoftClasses.Add(dinoData.DinoClass);
 
 	//
 	// Custom Data Bytes
