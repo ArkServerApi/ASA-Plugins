@@ -349,7 +349,7 @@ void HandleStryder(APrimalDinoCharacter* dino, int stryderhead, int stryderchest
 
 void HandleGacha(APrimalDinoCharacter* dino, nlohmann::json resourceOverrides)
 {
-	if (resourceOverrides.empty())
+	if (resourceOverrides.empty() || resourceOverrides == "")
 		return;
 
 	struct Gacha_ResourceStruct
@@ -369,7 +369,7 @@ void HandleGacha(APrimalDinoCharacter* dino, nlohmann::json resourceOverrides)
 	FProperty* resourceProduction = dino->FindProperty(FName("ResourceProduction", EFindName::FNAME_Find));
 	if (resourceProduction)
 	{
-		if (dino->StaticClass()->HasProperty(resourceProduction))
+		if (dino->ClassField()->HasProperty(resourceProduction))
 		{
 			auto* currentList = ((TArray<Gacha_ResourceStruct>*)(dino + resourceProduction->Offset_InternalField()));
 			if (currentList)
