@@ -282,7 +282,7 @@ void HandleStryder(APrimalDinoCharacter* dino, int stryderhead, int stryderchest
 			head->RemoveItemFromInventory(true, false);
 
 			UClass* Class = UVictoryCore::BPLoadClass(attachmentBP);
-			UPrimalItem* item = UPrimalItem::AddNewItem(Class, dino->MyInventoryComponentField(), true, true, 1, true, 1, false, 0, false, nullptr, 0, false, false, true);
+			UPrimalItem* item = UPrimalItem::AddNewItem(Class, dino->MyInventoryComponentField(), true, true, 1, true, 1, false, 0, false, nullptr, 0, false, false, true, false);
 			if (item)
 			{
 				FProperty* setHeadAttachment = dino->FindProperty(FName("set head attachment", EFindName::FNAME_Add));
@@ -327,7 +327,7 @@ void HandleStryder(APrimalDinoCharacter* dino, int stryderhead, int stryderchest
 			chest->RemoveItemFromInventory(true, false);
 
 			UClass* Class = UVictoryCore::BPLoadClass(attachmentBP);
-			UPrimalItem* item = UPrimalItem::AddNewItem(Class, dino->MyInventoryComponentField(), true, true, 1, true, 1, false, 0, false, nullptr, 0, false, false, true);
+			UPrimalItem* item = UPrimalItem::AddNewItem(Class, dino->MyInventoryComponentField(), true, true, 1, true, 1, false, 0, false, nullptr, 0, false, false, true, false);
 			if (item)
 			{
 				FProperty* setChestAttachment = dino->FindProperty(FName("set chest attachment", EFindName::FNAME_Add));
@@ -416,7 +416,7 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 		{
 			FString fsaddleblueprint(saddleblueprint.c_str());
 			UClass* saddleClass = UVictoryCore::BPLoadClass(fsaddleblueprint);
-			saddle = UPrimalItem::AddNewItem(saddleClass, dino->MyInventoryComponentField(), true, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true);
+			saddle = UPrimalItem::AddNewItem(saddleClass, dino->MyInventoryComponentField(), true, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true, false);
 		}
 
 		// Use Pelayori's Cryo Storage mod
@@ -425,7 +425,7 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 
 		if (!PreventCryo && cryoClass != nullptr && ArkShop::config["General"].value("GiveDinosInCryopods", false))
 		{
-			UPrimalItem* item = UPrimalItem::AddNewItem(cryoClass, nullptr, false, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true);
+			UPrimalItem* item = UPrimalItem::AddNewItem(cryoClass, nullptr, false, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true, false);
 			if (item)
 			{
 				if (ArkShop::config["General"].value("CryoLimitedTime", false))

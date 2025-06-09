@@ -87,7 +87,8 @@ namespace ArkShop::Store
 									0,
 									false,
 									false,
-									true
+									true,
+									false
 								)
 							);
 						}
