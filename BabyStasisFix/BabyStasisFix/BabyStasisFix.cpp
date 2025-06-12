@@ -1,44 +1,35 @@
 #include <API/Base.h>
 #include <API/ARK/Ark.h>
+#include <Timer.h>
 #include "json.hpp"
 #include <fstream>
 
 #pragma comment(lib, "AsaApi.lib")
 
 nlohmann::json config;
-std::chrono::system_clock::time_point nextRun;
 
 void UnstasisBabies()
 {
-    const auto now = std::chrono::system_clock::now();
-    if (now >= nextRun)
+    int counter = 0;
+    TArray<AActor*> actors;
+    UGameplayStatics::GetAllActorsOfClass(AsaApi::GetApiUtils().GetWorld(), APrimalDinoCharacter::GetPrivateStaticClass(), &actors);
+    for (AActor* actor : actors)
     {
-        int counter = 0;
+        if (actor == nullptr)
+            continue;
 
-        nextRun = now + std::chrono::seconds(config["tick"].get<int>());
+        const int team_id = actor->TargetingTeamField();
+        if (team_id < 50000)
+            continue;
 
-        TArray<AActor*> actors;
-        UGameplayStatics::GetAllActorsOfClass(AsaApi::GetApiUtils().GetWorld(), APrimalDinoCharacter::GetPrivateStaticClass(), &actors);
-        for (AActor* actor : actors)
-        {
-            if (actor == nullptr)
-                continue;
+        APrimalDinoCharacter* dino = static_cast<APrimalDinoCharacter*>(actor);
+        if (dino->IsDeadOrDying() || !dino->IsBaby() || !dino->bStasised()())
+            continue;
 
-            const int team_id = actor->TargetingTeamField();
-            if (team_id < 50000)
-                continue;
-
-            APrimalDinoCharacter* dino = static_cast<APrimalDinoCharacter*>(actor);
-            if (!dino->bIsBaby()())
-                continue;
-
-            if (dino->bStasised()()) {
-                counter++;
-                dino->Unstasis();
-            }
-        }
-        Log::GetLog()->info("Update tick for {} babies. Next tick in {} seconds.", counter, config["tick"].get<int>());
+        counter++;
+        dino->Unstasis();
     }
+    Log::GetLog()->info("Update tick for {} babies. Next tick in {} seconds.", counter, config["tick"].get<int>());
 }
 
 void ReadConfig()
@@ -53,13 +44,10 @@ void ReadConfig()
     file.close();
 }
 
-
 // Called when the server is ready, do post-"server ready" initialization here
 void OnServerReady()
 {
-    nextRun = std::chrono::system_clock::now();
-
-    AsaApi::GetCommands().AddOnTimerCallback("UnstasisBabies", &UnstasisBabies);
+    API::Timer::Get().RecurringExecute("BabyStasisFix.UnstasisBabies", &UnstasisBabies, config["tick"].get<int>(), -1, false);
 }
 
 // Hook that triggers once when the server is ready
@@ -89,5 +77,5 @@ extern "C" __declspec(dllexport) void Plugin_Init()
 extern "C" __declspec(dllexport) void Plugin_Unload()
 {
     AsaApi::GetHooks().DisableHook("AShooterGameMode.BeginPlay()", Hook_AShooterGameMode_BeginPlay);
-    AsaApi::GetCommands().RemoveOnTimerCallback("UnstasisBabies");
+    API::Timer::Get().UnloadTimer("BabyStasisFix.UnstasisBabies");
 }
