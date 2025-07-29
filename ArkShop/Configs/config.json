@@ -104,12 +104,10 @@
       "Description": "100 stone and 100 wood",
       "Commands": [
         {
-          "Command": "gfi stone 100 0 0",
-          "ExecuteAsAdmin": true
+          "Command": "gfi stone 100 0 0"
         },
         {
-          "Command": "gfi wood 100 0 0",
-          "ExecuteAsAdmin": true
+          "Command": "gfi wood 100 0 0"
         }
       ]
     }
@@ -329,8 +327,7 @@
       "Price": 5000,
       "Items": [
         {
-          "Command": "fly",
-          "ExecuteAsAdmin": true
+          "Command": "fly"
         }
       ]
     }

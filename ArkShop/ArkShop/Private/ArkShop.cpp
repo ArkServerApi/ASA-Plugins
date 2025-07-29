@@ -236,7 +236,9 @@ FCustomItemData ArkShop::GetDinoCustomItemData(APrimalDinoCharacter* dino, UPrim
 	//
 	//	Custom Data Soft Classes
 	//
-	//customItemData.CustomDataSoftClasses.Add(dinoData.DinoClass);
+	auto softClass = TSoftClassPtr<UObject>(dinoData.DinoClass); //TSoftClassPtr implementation broken?
+	//auto softClass = TSoftClassPtr<UObject>(AsaApi::GetApiUtils().GetClassBlueprint(dinoData.DinoClass));
+	customItemData.CustomDataSoftClassesField().Add(softClass);
 
 	//
 	// Custom Data Bytes

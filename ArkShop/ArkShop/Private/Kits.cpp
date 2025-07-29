@@ -258,8 +258,6 @@ namespace ArkShop::Kits
 		{
 			const std::string command = command_entry.value("Command", "");
 
-			const bool exec_as_admin = command_entry.value("ExecuteAsAdmin", false);
-
 			FString fcommand = fmt::format(
 				command, 
 				fmt::arg("eosid", eos_id.ToString()),
@@ -270,13 +268,13 @@ namespace ArkShop::Kits
 
 			const bool was_admin = player_controller->bIsAdmin()();
 
-			if (!was_admin && exec_as_admin)
+			if (!was_admin)
 				player_controller->bIsAdmin() = true;
 
 			FString result;
 			player_controller->ConsoleCommand(&result, &fcommand, false);
 
-			if (!was_admin && exec_as_admin)
+			if (!was_admin)
 				player_controller->bIsAdmin() = false;
 		}
 	}
