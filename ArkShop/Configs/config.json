@@ -400,6 +400,7 @@
     "ShopFindNotFound": "No items matched your search",
     "ShopFindTooManyResults": "Too many results to display refine your search term",
     "NoPermissionsStore": "<RichColor Color=\"1, 0, 0, 1\">You don't have permission to buy this {0}!</>",
-    "InventoryIsFull": "<RichColor Color=\"1, 0, 0, 1\">Unable to redeem your kit, inventory full!</>"
+    "InventoryIsFull": "<RichColor Color=\"1, 0, 0, 1\">Unable to redeem your kit, inventory full!</>",
+    "ReceivedKits": "<RichColor Color=\"1, 1, 0, 1\">You received {0} kit(s): {1}! (Now you have: {2})</>"
   }
 }
