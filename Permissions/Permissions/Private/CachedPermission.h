@@ -4,6 +4,14 @@
 struct TimedGroup {
 	FString GroupName;
 	long long DelayUntilTime, ExpireAtTime;
+
+	bool operator==(const TimedGroup& other) const {
+		return GroupName == other.GroupName;
+	}
+
+	bool operator==(const FString& groupName) const {
+		return GroupName == groupName;
+	}
 };
 class CachedPermission {
 public:
