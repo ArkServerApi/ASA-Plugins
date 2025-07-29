@@ -71,9 +71,10 @@ namespace ArkShop::Store
 						TArray<UPrimalItem*> out_items{};
 						for (int i = 0; i < loops; ++i)
 						{
+							TSubclassOf<UPrimalItem> itemClassRef(itemClass);
 							out_items.Add(
 								UPrimalItem::AddNewItem(
-									itemClass,
+									itemClassRef,
 									playerInventory,
 									false,
 									false,

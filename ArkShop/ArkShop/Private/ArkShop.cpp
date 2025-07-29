@@ -74,7 +74,7 @@ void ArkShop::PostToDiscord(const std::wstring log)
 
 	FString msg = L"{{\"content\":\"```stylus\\n{}```\",\"username\":\"{}\",\"avatar_url\":null}}";
 	FString output = FString::Format(*msg, log, ArkShop::discord_sender_name);
-
+  
 	auto myCallback = [](bool, std::string, std::unordered_map<std::string, std::string>) {};
 
 	bool result = API::Requests::Get().CreatePostRequest(
@@ -232,6 +232,11 @@ FCustomItemData ArkShop::GetDinoCustomItemData(APrimalDinoCharacter* dino, UPrim
 	// Custom Data Classes
 	//
 	customItemData.CustomDataClasses.Add(dinoData.DinoClass);
+
+	//
+	//	Custom Data Soft Classes
+	//
+	//customItemData.CustomDataSoftClasses.Add(dinoData.DinoClass);
 
 	//
 	// Custom Data Bytes
@@ -419,11 +424,11 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 			saddle = UPrimalItem::AddNewItem(saddleClass, dino->MyInventoryComponentField(), true, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true, false);
 		}
 
-		// Use Pelayori's Cryo Storage mod
-		FString cryo = FString(ArkShop::config["General"].value("CryoItemPath", "Blueprint'/Game/Extinction/CoreBlueprints/Weapons/PrimalItem_WeaponEmptyCryopod.PrimalItem_WeaponEmptyCryopod'"));
-		UClass* cryoClass = UVictoryCore::BPLoadClass(cryo);
 
-		if (!PreventCryo && cryoClass != nullptr && ArkShop::config["General"].value("GiveDinosInCryopods", false))
+		const FString cryo = FString(ArkShop::config["General"].value("CryoItemPath", "Blueprint'/Game/Extinction/CoreBlueprints/Weapons/PrimalItem_WeaponEmptyCryopod.PrimalItem_WeaponEmptyCryopod'"));
+		TSubclassOf<UPrimalItem> cryoClass = UVictoryCore::BPLoadClass(cryo);
+
+		if (!PreventCryo && cryoClass.uClass != nullptr && ArkShop::config["General"].value("GiveDinosInCryopods", false))
 		{
 			UPrimalItem* item = UPrimalItem::AddNewItem(cryoClass, nullptr, false, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true, false);
 			if (item)
@@ -438,7 +443,7 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 				if (player_controller->GetPlayerInventoryComponent())
 				{
 					UPrimalItem* item2 = player_controller->GetPlayerInventoryComponent()->AddItemObject(item);
-
+					
 					if (item2)
 						success = true;
 				}
