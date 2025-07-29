@@ -106,7 +106,7 @@ namespace ArkShop::Kits
 
 		bool returnValue = SaveConfig(player_kit_json.dump(), eos_id);
 
-		if (returnValue && AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(senderPlatform))
+		if (returnValue && AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(eos_id))
 		{
 			FString kitData(database->GetPlayerKits(eos_id));
 			ArkShopUI::PlayerKits(eos_id, kitData);
@@ -446,7 +446,7 @@ namespace ArkShop::Kits
 
 		bool returnValue = SaveConfig(player_kit_json.dump(), eos_id);
 
-		if (returnValue && AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(senderPlatform))
+		if (returnValue && AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(eos_id))
 		{
 			FString kitData(database->GetPlayerKits(eos_id));
 			ArkShopUI::PlayerKits(eos_id, kitData);
@@ -477,14 +477,11 @@ namespace ArkShop::Kits
 		}
 		else
 		{
-			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(senderPlatform))
+			const FString& eos_id = AsaApi::GetApiUtils().GetEOSIDFromController(player_controller);
+			if (!eos_id.IsEmpty() && AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(eos_id))
 			{
-				const FString& eos_id = AsaApi::GetApiUtils().GetEOSIDFromController(player_controller);
-				if (!eos_id.IsEmpty())
-				{
-					FString kitData(database->GetPlayerKits(eos_id));
-					ArkShopUI::PlayerKits(eos_id, kitData);
-				}
+				FString kitData(database->GetPlayerKits(eos_id));
+				ArkShopUI::PlayerKits(eos_id, kitData);
 				return;
 			}
 			else
@@ -589,7 +586,7 @@ namespace ArkShop::Kits
 		}
 	}
 
-	bool ChangeKitAmountCbk(const FString& cmd)
+	bool ChangeKitAmountCbk(const FString& cmd, /*out param*/ FString* parsedEosId)
 	{
 		TArray<FString> parsed;
 		cmd.ParseIntoArray(parsed, L" ", true);
@@ -604,6 +601,9 @@ namespace ArkShop::Kits
 			try
 			{
 				eos_id = *parsed[1];
+				if (parsedEosId != nullptr)
+					*parsedEosId = eos_id;
+
 				amount = std::stoi(*parsed[3]);
 			}
 			catch (const std::exception& exception)
@@ -614,7 +614,21 @@ namespace ArkShop::Kits
 
 			if (DBHelper::IsPlayerExists(eos_id))
 			{
-				return ChangeKitAmount(kit_name, amount, eos_id, 0);
+				bool result = ChangeKitAmount(kit_name, amount, eos_id, 0);
+				if (result)
+				{
+					auto playerKits = GetPlayerKitsConfig(eos_id);
+					int total_amount = playerKits.value(kit_name.ToString(), nlohmann::json::object()).value("Amount", 0);
+					FString receivedKitsText = GetText("ReceivedKits");
+					if (receivedKitsText == "No message")
+						receivedKitsText = "<RichColor Color=\"1, 1, 0, 1\">You received {0} kit(s): {1}! (Now you have: {2})</>";
+
+					AShooterPlayerController* player_controller = AsaApi::GetApiUtils().FindPlayerFromEOSID(eos_id);
+					AsaApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"),
+						*receivedKitsText, amount, *kit_name, total_amount);
+				}
+
+				return result;
 			}
 		}
 
@@ -627,11 +641,16 @@ namespace ArkShop::Kits
 	{
 		const auto shooter_controller = static_cast<AShooterPlayerController*>(controller);
 
-		const bool result = ChangeKitAmountCbk(*cmd);
+		FString parsedEosId;
+
+		const bool result = ChangeKitAmountCbk(*cmd, &parsedEosId);
 		if (result)
 		{
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green,
-				"Successfully changed kit amount");
+			if (!controller->GetEOSId().Equals(parsedEosId))
+			{
+				AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Green,
+					"Successfully changed kit amount");
+			}
 		}
 		else
 		{
@@ -669,7 +688,7 @@ namespace ArkShop::Kits
 	{
 		FString reply;
 
-		const bool result = ChangeKitAmountCbk(rcon_packet->Body);
+		const bool result = ChangeKitAmountCbk(rcon_packet->Body, nullptr);
 		if (result)
 		{
 			reply = "Successfully changed kit amount";

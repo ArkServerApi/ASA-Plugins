@@ -89,7 +89,7 @@ namespace ArkShop::Store
 									false,
 									false,
 									true,
-									true
+									false
 								)
 							);
 						}
@@ -99,7 +99,7 @@ namespace ArkShop::Store
 					else
 					{
 						int totalAmount = amount * default_amount;
-						playerInventory->IncrementItemTemplateQuantity(itemClass, totalAmount, true, force_blueprint, nullptr, nullptr, false, false, false, false, true, false, true);
+						playerInventory->IncrementItemTemplateQuantity(itemClass, totalAmount, true, force_blueprint, nullptr, nullptr, false, false, false, false, true, false, false);
 					}
 				}
 			}
@@ -483,18 +483,16 @@ namespace ArkShop::Store
 
 	void ShowItems(AShooterPlayerController* player_controller, FString* message, int, int senderPlatform)
 	{
-		if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(senderPlatform))
-		{
-			if (ArkShopUI::RequestUI(player_controller))
-			{
-				const FString& eos_id = AsaApi::GetApiUtils().GetEOSIDFromController(player_controller);
-				if (!eos_id.IsEmpty())
-				{
-					int points = Points::GetPoints(eos_id);
-					ArkShopUI::UpdatePoints(eos_id, points);
+		const FString& eos_id = AsaApi::GetApiUtils().GetEOSIDFromController(player_controller);
 
-					ArkShop::Kits::InitKitData(eos_id);
-				}
+		if (!eos_id.IsEmpty() && AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(eos_id))
+		{
+			if (ArkShopUI::RequestUI(eos_id))
+			{
+				int points = Points::GetPoints(eos_id);
+				ArkShopUI::UpdatePoints(eos_id, points);
+
+				ArkShop::Kits::InitKitData(eos_id);
 				return;
 			}
 		}

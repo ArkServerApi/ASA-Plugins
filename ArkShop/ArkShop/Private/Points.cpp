@@ -108,11 +108,8 @@ namespace ArkShop::Points
 				return;
 			}
 
-			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(senderPlatform) && !config["General"].value("UseOriginalTradeCommandWithUI", false))
-			{
-				receiver_player = AsaApi::GetApiUtils().FindPlayerFromEOSID(in_param);
-			}
-			else
+			receiver_player = AsaApi::GetApiUtils().FindPlayerFromEOSID(in_param);
+			if (receiver_player == nullptr)
 			{
 				TArray<AShooterPlayerController*> receiver_players = AsaApi::GetApiUtils().FindPlayerFromCharacterName(in_param, ESearchCase::IgnoreCase, false);
 				if (receiver_players.Num() > 1)
@@ -198,7 +195,7 @@ namespace ArkShop::Points
 		{
 			int points = GetPoints(eos_id);
 
-			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(senderPlatform))
+			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI") && ArkShopUI::CanUseMod(eos_id))
 			{
 				ArkShopUI::UpdatePoints(eos_id, points);
 				return;
