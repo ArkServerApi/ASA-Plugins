@@ -88,14 +88,14 @@ namespace ArkShop
 	FORCEINLINE TArray<FString> GetDinoDataStrings(APrimalDinoCharacter* dino, const FString& dinoNameInMAP, const FString& dinoName, UPrimalItem* saddle)
 	{
 		TArray<FString> strings;
-		strings.Add(dinoNameInMAP);
-		strings.Add(dinoName);
+		strings.Add(dinoNameInMAP); //0
+		strings.Add(dinoName); //1
 
 		FString tmp;
 		dino->GetColorSetInidcesAsString(&tmp);
-		strings.Add(tmp);
+		strings.Add(tmp); //2
 
-		strings.Add(dino->bNeutered()() ? "NEUTERED" : "");
+		strings.Add(dino->bNeutered()() ? "NEUTERED" : ""); //3
 
 		tmp = "";
 		if (dino->bUsesGender()())
@@ -103,23 +103,41 @@ namespace ArkShop
 				tmp = "FEMALE";
 			else
 				tmp = "MALE";
-		strings.Add(tmp);
-		strings.Add(""); // empty
-		strings.Add("0"); // should get bitmasks for buffs but doesn't seem to get used
+		strings.Add(tmp); //4
+		strings.Add(""); // 5 empty
 
-		//strings.Append(GetSaddleData(saddle)); 
-		//bypassing saddle data for now
-		strings.Add("");
-		strings.Add("");
-		strings.Add("");
-		strings.Add("0");
-		strings.Add("0");
-		strings.Add("0");
+		TArray<APrimalBuff*> buffs;
+		dino->GetBuffs(&buffs);
+		if (buffs.Num() > 0)
+		{
+			int buffsbitmask = AsaApi::GetApiUtils().GetGameData()->GetBitmaskForBuffs(&buffs);
+			tmp = FString(std::to_string(buffsbitmask));
+			strings.Add(tmp); // 6 - should get bitmasks for buffs but doesn't seem to get used
+		}
+		else
+			strings.Add("0"); // 6 should get bitmasks for buffs but doesn't seem to get used
 
-		strings.Add(""); // extra data like harvest levels - not needed
-		tmp = "";
-		dino->GetCurrentDinoName(&tmp, nullptr);
-		strings.Add(tmp);
+		auto matingtime = UVictoryCore::PersistentToUtcTime(dino, dino->NextAllowedMatingTimeField());
+		tmp = FString(std::to_string(matingtime));
+		strings.Add(tmp); // 7 next allowed mating time
+
+		strings.Add(dino->ImprinterNameField()); // 8 imprinter name
+
+		//strings.Add(dino->DinoNameTagField().ToString()); // 9 dino name tag
+		//FString dinoNameTag(dino->DinoNameTagField().ToString());
+		//strings.Add(dinoNameTag); // 9 dino name tag
+		//strings.Add("Carno");  // 9 dino name tag
+		strings.Add("");  // 9 dino name tag
+		
+		FString preventRegions = "";
+		for (int i = 0; i <= 5; i++)
+		{
+			if (dino->GetUsesColorizationRegion(i))
+				preventRegions.Append(L"0"); //allows region to be colored
+			else
+				preventRegions.Append(L"1"); //does not allow region to be colored
+		}
+		strings.Add(preventRegions); // 10 prevent color regions
 		return strings;
 	}
 } // namespace ArkShop
