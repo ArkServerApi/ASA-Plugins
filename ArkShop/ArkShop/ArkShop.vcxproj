@@ -76,6 +76,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DelayLoadDLLs>Permissions.dll</DelayLoadDLLs>
       <AdditionalLibraryDirectories>$(SolutionDir)Libs;$(SolutionDir)..\..\AsaApi\out_lib;$(SolutionDir)..\Permissions\out_lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libmariadb.lib;Ws2_32.lib;Secur32.lib;Crypt32.lib;Bcrypt.lib;Ncrypt.lib;Shlwapi.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
