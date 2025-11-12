@@ -1,0 +1,6 @@
+{
+  "FullName": "Welcome Plugin",
+  "Description": "A simple example plugin that welcomes players and provides server information",
+  "Version": 1.0,
+  "MinApiVersion": 1.19
+}

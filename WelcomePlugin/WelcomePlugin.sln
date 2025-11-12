@@ -1,0 +1,22 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WelcomePlugin", "WelcomePlugin\WelcomePlugin.vcxproj", "{A8E8B7C3-9F4D-4E2A-B5C1-7D8F9E0A1B2C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A8E8B7C3-9F4D-4E2A-B5C1-7D8F9E0A1B2C}.Release|x64.ActiveCfg = Release|x64
+		{A8E8B7C3-9F4D-4E2A-B5C1-7D8F9E0A1B2C}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B9F0C8D4-0E5F-4F3B-A6D2-8E9F0A1B2C3D}
+	EndGlobalSection
+EndGlobal

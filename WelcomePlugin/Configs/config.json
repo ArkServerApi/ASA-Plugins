@@ -1,0 +1,14 @@
+{
+  "General": {
+    "ServerName": "My ASA Server",
+    "WelcomeMessage": "Welcome {player} to {server}!",
+    "WelcomeEnabled": true,
+    "TextSize": 1.5,
+    "DisplayTime": 5.0
+  },
+  "ServerInfo": {
+    "Description": "A great Ark: Survival Ascended server!",
+    "Website": "www.example.com",
+    "Discord": "discord.gg/example"
+  }
+}
