@@ -307,7 +307,7 @@ namespace ArkShop::Store
 
 		if (points >= price && Points::SpendPoints(price, eos_id))
 		{
-			player_controller->AddExperience(amount, false, true);
+			player_controller->AddExperience(amount, false, true, EXPType::XP_GENERIC);
 
 			AsaApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"),
 				*GetText("BoughtExp"));
