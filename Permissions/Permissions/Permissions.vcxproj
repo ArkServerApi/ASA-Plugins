@@ -97,7 +97,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;PERMISSIONS_EXPORTS;_WINDOWS;_USRDLL;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;PERMISSIONS_ARK;_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;PERMISSIONS_EXPORTS;_WINDOWS;_USRDLL;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;PERMISSIONS_ARK;_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)Includes;$(SolutionDir)Includes\sqlite3;$(SolutionDir)..\..\AsaApi\AsaApi\Core\Public;$(SolutionDir)..\..\AsaApi\AsaApi\Core\Public\API;$(SolutionDir)..\..\AsaApi\AsaApi\Core\Public\API\ARK;$(SolutionDir)..\..\AsaApi\AsaApi\Core\Public\API\UE;$(SolutionDir)..\..\AsaApi\AsaApi\Core\Public\Logger;$(SolutionDir)..\..\AsaApi\AsaApi\vcpkg_installed\x64-windows-static-md\x64-windows-static-md\include</AdditionalIncludeDirectories>
@@ -109,7 +109,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Libs;$(SolutionDir)..\..\AsaApi\out_lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libmariadb.lib;Ws2_32.lib;Secur32.lib;Crypt32.lib;Bcrypt.lib;Ncrypt.lib;Shlwapi.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /I  /Y "$(TargetDir)Permissions.lib" "..\out_lib\"</Command>

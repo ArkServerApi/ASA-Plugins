@@ -15,6 +15,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ArkShop</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>AdminsPermissions</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -67,7 +68,7 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;SHOP_EXPORTS;_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Arkshop\Public;$(SolutionDir)..\Permissions\Permissions\Public;$(SolutionDir)Includes;$(SolutionDir)..\..\AsaApi\AsaApi\Core\Public;$(SolutionDir)..\..\AsaApi\AsaApi\Core\Public\API;$(SolutionDir)..\..\AsaApi\AsaApi\Core\Public\API\ARK;$(SolutionDir)..\..\AsaApi\AsaApi\Core\Public\API\UE;$(SolutionDir)..\..\AsaApi\AsaApi\Core\Public\Logger;$(SolutionDir)..\..\AsaApi\AsaApi\vcpkg_installed\x64-windows-static-md\x64-windows-static-md\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Permissions\Permissions\Public;$(SolutionDir)..\..\AsaApi\AsaApi\Core\Public;$(SolutionDir)..\..\AsaApi\AsaApi\Core\Public\API;$(SolutionDir)..\..\AsaApi\AsaApi\Core\Public\API\ARK;$(SolutionDir)..\..\AsaApi\AsaApi\Core\Public\API\UE;$(SolutionDir)..\..\AsaApi\AsaApi\Core\Public\Logger;$(SolutionDir)..\..\AsaApi\AsaApi\vcpkg_installed\x64-windows-static-md\x64-windows-static-md\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -76,7 +77,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DelayLoadDLLs>Permissions.dll</DelayLoadDLLs>
       <AdditionalLibraryDirectories>$(SolutionDir)Libs;$(SolutionDir)..\..\AsaApi\out_lib;$(SolutionDir)..\Permissions\out_lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libmariadb.lib;Ws2_32.lib;Secur32.lib;Crypt32.lib;Bcrypt.lib;Ncrypt.lib;Shlwapi.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -117,36 +118,9 @@ if exist "E:\ASAdata\Servers\Server2\ShooterGame\Binaries\Win64\ArkApi\Plugins\$
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Private\ArkShop.h" />
-    <ClInclude Include="Private\Database\IDatabase.h" />
-    <ClInclude Include="Private\Database\MysqlDB.h" />
-    <ClInclude Include="Private\Database\SqlLiteDB.h" />
-    <ClInclude Include="Private\Helpers.h" />
-    <ClInclude Include="Private\json.hpp" />
-    <ClInclude Include="Private\ShopLog.h" />
-    <ClInclude Include="Private\Database\sqlite3.h" />
-    <ClInclude Include="Private\StoreSell.h" />
-    <ClInclude Include="Private\TimedRewards.h" />
-    <ClInclude Include="Private\Tools.h" />
-    <ClInclude Include="Public\Base.h" />
-    <ClInclude Include="Public\DBHelper.h" />
-    <ClInclude Include="Public\ITimedRewards.h" />
-    <ClInclude Include="Public\Kits.h" />
-    <ClInclude Include="Public\Points.h" />
-    <ClInclude Include="Public\Store.h" />
+    <ClCompile Include="Private\AdminsPermissions.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Private\ArkShop.cpp" />
-    <ClCompile Include="Private\DBHelper.cpp" />
-    <ClCompile Include="Private\Kits.cpp" />
-    <ClCompile Include="Private\Points.cpp" />
-    <ClCompile Include="Private\Database\sqlite3.c" />
-    <ClCompile Include="Private\Store.cpp" />
-    <ClCompile Include="Private\StoreSell.cpp" />
-    <ClCompile Include="Private\TimedRewards.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\Configs\Commented.json" />
     <None Include="..\Configs\config.json" />
     <None Include="..\Configs\PluginInfo.json" />
   </ItemGroup>

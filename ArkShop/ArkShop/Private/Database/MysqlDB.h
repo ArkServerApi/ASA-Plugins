@@ -4,8 +4,6 @@
 
 #include "IDatabase.h"
 
-#pragma comment(lib, "mysqlclient.lib")
-
 class MySql : public IDatabase
 {
 public:
@@ -22,6 +20,8 @@ public:
 			options.autoreconnect = true;
 			options.timeout = 30;
 			options.port = port;
+			options.ssl_enforce = true;
+			options.ssl_verify_server_cert = false;
 
 			bool result = db_.open(options);
 			if (!result)

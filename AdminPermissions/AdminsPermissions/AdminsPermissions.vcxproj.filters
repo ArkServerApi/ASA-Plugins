@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Configs">
+      <UniqueIdentifier>{03c5371d-7f79-4d62-b825-2d3f38dab422}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Configs\config.json">
+      <Filter>Configs</Filter>
+    </None>
+    <None Include="..\Configs\PluginInfo.json">
+      <Filter>Configs</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Private\AdminsPermissions.cpp" />
+  </ItemGroup>
+</Project>

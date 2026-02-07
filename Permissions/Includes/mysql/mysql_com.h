@@ -21,6 +21,7 @@
 #define _mysql_com_h
 #include "binary_log_types.h"
 #include "my_command.h"
+#include <winsock.h>
 #define HOSTNAME_LENGTH 60
 #define SYSTEM_CHARSET_MBMAXLEN 3
 #define FILENAME_CHARSET_MBMAXLEN 5
@@ -331,7 +332,7 @@ typedef struct st_vio Vio;
 typedef struct st_net {
   Vio *vio;
   unsigned char *buff,*buff_end,*write_pos,*read_pos;
-  my_socket fd;					/* For Perl DBI/dbd */
+  SOCKET fd;					/* For Perl DBI/dbd */
   /*
     The following variable is set if we are doing several queries in one
     command ( as in LOAD TABLE ... FROM MASTER ),
