@@ -1,0 +1,9 @@
+{
+  "FullName": "Admins permissions - Ascended",
+  "Description": "Configure admins permissions",
+  "Version": 1.0,
+  "MinApiVersion": 1.19,
+  "Dependencies": [
+    "Permissions"
+  ]
+}
