@@ -365,12 +365,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/CrosschatAscendedBotV2/CrosschatAscendedBot
-/PlayerAuctions/PluginsReference
-/CrosschatAscendedBotV2/encKey.txt
-/CrosschatAscendedBotV2/publish_staging
-/PlayerAuctions/AsaApi
-/PlayerAuctions/cached_offsets.txt
 
 /.vs/ASA-Plugins/FileContentIndex
 /.vs/ASA-Plugins/v17
