@@ -100,7 +100,7 @@ namespace ArkShop::Store
 					else
 					{
 						int totalAmount = amount * default_amount;
-						playerInventory->IncrementItemTemplateQuantity(itemClass, totalAmount, true, force_blueprint, nullptr, nullptr, false, false, false, false, true, false, false, false);
+						playerInventory->IncrementItemTemplateQuantity(itemClass, totalAmount, true, force_blueprint, nullptr, nullptr, false, false, false, false, true, false, false, false, false);
 					}
 				}
 			}
@@ -307,7 +307,7 @@ namespace ArkShop::Store
 
 		if (points >= price && Points::SpendPoints(price, eos_id))
 		{
-			player_controller->AddExperience(amount, false, true);
+			player_controller->AddExperience(amount, false, true, EXPType::XP_GENERIC);
 
 			AsaApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"),
 				*GetText("BoughtExp"));
