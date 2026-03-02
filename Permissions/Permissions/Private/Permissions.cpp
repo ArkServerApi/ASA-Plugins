@@ -291,7 +291,8 @@ namespace Permissions
 	{
 		auto returnvalue = database->AddPlayerToGroup(eos_id, group);
 		NotifySubscribers(eos_id, 0);
-		NotifySubscribersDetailed(eos_id, 0, group, true, false, false);
+		if (!returnvalue.has_value()) // no error occured
+			NotifySubscribersDetailed(eos_id, 0, group, true, false, false);
 		return returnvalue;
 	}
 
@@ -300,7 +301,8 @@ namespace Permissions
 		NotifySubscribers(eos_id, 0);
 		auto returnvalue = database->RemovePlayerFromGroup(eos_id, group);
 		NotifySubscribers(eos_id, 0);
-		NotifySubscribersDetailed(eos_id, 0, group, true, false, false);
+		if (!returnvalue.has_value()) // no error occured
+			NotifySubscribersDetailed(eos_id, 0, group, false, false, false);
 		return returnvalue;
 	}
 
@@ -309,7 +311,8 @@ namespace Permissions
 		NotifySubscribers(eos_id, 0);
 		auto returnvalue = database->AddPlayerToTimedGroup(eos_id, group, secs, delaySecs);
 		NotifySubscribers(eos_id, 0);
-		NotifySubscribersDetailed(eos_id, 0, group, true, true, false);
+		if(!returnvalue.has_value()) // no error occured
+			NotifySubscribersDetailed(eos_id, 0, group, true, true, false);
 		return returnvalue;
 	}
 
@@ -317,7 +320,8 @@ namespace Permissions
 	{
 		auto returnvalue = database->RemovePlayerFromTimedGroup(eos_id, group);
 		NotifySubscribers(eos_id, 0);
-		NotifySubscribersDetailed(eos_id, 0, group, false, true, false);
+		if (!returnvalue.has_value()) // no error occured
+			NotifySubscribersDetailed(eos_id, 0, group, false, true, false);
 		return returnvalue;
 	}
 
@@ -325,7 +329,8 @@ namespace Permissions
 	{
 		auto returnvalue = database->AddTribeToGroup(tribeId, group);
 		NotifySubscribers(L"", tribeId);
-		NotifySubscribersDetailed(L"", tribeId, group, true, false, true);
+		if (!returnvalue.has_value()) // no error occured
+			NotifySubscribersDetailed(L"", tribeId, group, true, false, true);
 		return returnvalue;
 	}
 
@@ -333,7 +338,8 @@ namespace Permissions
 	{
 		auto returnvalue = database->RemoveTribeFromGroup(tribeId, group);
 		NotifySubscribers(L"", tribeId);
-		NotifySubscribersDetailed(L"", tribeId, group, false, false, true);
+		if (!returnvalue.has_value()) // no error occured
+			NotifySubscribersDetailed(L"", tribeId, group, false, false, true);
 		return returnvalue;
 	}
 
@@ -341,7 +347,8 @@ namespace Permissions
 	{
 		auto returnvalue = database->AddTribeToTimedGroup(tribeId, group, secs, delaySecs);
 		NotifySubscribers(L"", tribeId);
-		NotifySubscribersDetailed(L"", tribeId, group, true, true, true);
+		if (!returnvalue.has_value()) // no error occured
+			NotifySubscribersDetailed(L"", tribeId, group, true, true, true);
 		return returnvalue;
 	}
 
@@ -349,7 +356,8 @@ namespace Permissions
 	{
 		auto returnvalue = database->RemoveTribeFromTimedGroup(tribeId, group);
 		NotifySubscribers(L"", tribeId);
-		NotifySubscribersDetailed(L"", tribeId, group, false, true, true);
+		if (!returnvalue.has_value()) // no error occured
+			NotifySubscribersDetailed(L"", tribeId, group, false, true, true);
 		return returnvalue;
 	}
 	
