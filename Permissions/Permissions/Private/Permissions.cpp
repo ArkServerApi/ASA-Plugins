@@ -30,10 +30,23 @@ struct PermissionGroupUpdatedCallback
 	std::function<void(const FString&, int)> callback;
 };
 
+struct PermissionGroupUpdatedDetailedCallback
+{
+	PermissionGroupUpdatedDetailedCallback(FString CallbackName, std::function<void(const FString&, int, const FString&, bool, bool, bool)> callback)
+		: SubscriberUID(std::move(CallbackName)),
+		callback(std::move(callback))
+	{
+	}
+
+	FString SubscriberUID;
+	std::function<void(const FString&, int, const FString&, bool, bool, bool)> callback;
+};
+
 namespace Permissions
 {
 #pragma region Subscribers
 	std::vector<std::shared_ptr<PermissionGroupUpdatedCallback>> permissionGroupUpdatedSubscribers;
+	std::vector<std::shared_ptr<PermissionGroupUpdatedDetailedCallback>> permissionGroupUpdatedDetailedSubscribers;
 
 	/// <summary>
 	/// Subscribes to the PermissionGroupUpdatedCallback
@@ -72,6 +85,45 @@ namespace Permissions
 			subscriber->callback(eos_id, tribeid);
 		}
 	}
+
+	/// <summary>
+	/// Subscribes to the PermissionGroupUpdatedDetailedCallback
+	/// 
+	/// CallbackName is a unique identifier for the subscriber to be able to unsubscribe using a combination of PluginName and ServerID is recommended
+	/// </summary>
+	/// <param name="CallbackName"></param>
+	/// <param name="callback"></param>
+	void SubscribePermissionGroupUpdatedDetailedCallback(FString CallbackName, const std::function<void(const FString&, int, const FString&, bool, bool, bool)>& callback)
+	{
+		permissionGroupUpdatedDetailedSubscribers.push_back(std::make_shared<PermissionGroupUpdatedDetailedCallback>(CallbackName, callback));
+	}
+
+	/// <summary>
+	/// Removes the subscriber from the list of detailed-subscribers
+	/// </summary>
+	/// <param name="CallbackName"></param>
+	void UnSubscribePermissionGroupUpdatedDetailedCallback(FString CallbackName)
+	{
+		auto iter = std::find_if(permissionGroupUpdatedDetailedSubscribers.begin(), permissionGroupUpdatedDetailedSubscribers.end(),
+			[&CallbackName](const std::shared_ptr<PermissionGroupUpdatedDetailedCallback>& data) -> bool {return data->SubscriberUID == CallbackName; });
+
+		if (iter != permissionGroupUpdatedDetailedSubscribers.end())
+			permissionGroupUpdatedDetailedSubscribers.erase(std::remove(permissionGroupUpdatedDetailedSubscribers.begin(), permissionGroupUpdatedDetailedSubscribers.end(), *iter), permissionGroupUpdatedDetailedSubscribers.end());
+	}
+
+	/// <summary>
+	/// Processes the list of detailed-subscribers and notifies them of the change
+	/// </summary>
+	/// <param name="eos_id"></param>
+	/// <param name="tribeid"></param>
+	void NotifySubscribersDetailed(const FString& eosId, int tribeId, const FString& groupChanged, bool bAddedGroup, bool bIsTimedGroup, bool bIsTribeGroup)
+	{
+		for (const auto& subscriber : permissionGroupUpdatedDetailedSubscribers)
+		{
+			subscriber->callback(eosId, tribeId, groupChanged, bAddedGroup, bIsTimedGroup, bIsTribeGroup);
+		}
+	}
+
 #pragma endregion Subscribers
 
 	std::vector<std::shared_ptr<PermissionCallback>> playerPermissionCallbacks;
@@ -235,6 +287,7 @@ namespace Permissions
 	{
 		auto returnvalue = database->AddPlayerToGroup(eos_id, group);
 		NotifySubscribers(eos_id, 0);
+		NotifySubscribersDetailed(eos_id, 0, group, true, false, false);
 		return returnvalue;
 	}
 
@@ -243,6 +296,7 @@ namespace Permissions
 		NotifySubscribers(eos_id, 0);
 		auto returnvalue = database->RemovePlayerFromGroup(eos_id, group);
 		NotifySubscribers(eos_id, 0);
+		NotifySubscribersDetailed(eos_id, 0, group, true, false, false);
 		return returnvalue;
 	}
 
@@ -251,6 +305,7 @@ namespace Permissions
 		NotifySubscribers(eos_id, 0);
 		auto returnvalue = database->AddPlayerToTimedGroup(eos_id, group, secs, delaySecs);
 		NotifySubscribers(eos_id, 0);
+		NotifySubscribersDetailed(eos_id, 0, group, true, true, false);
 		return returnvalue;
 	}
 
@@ -258,6 +313,7 @@ namespace Permissions
 	{
 		auto returnvalue = database->RemovePlayerFromTimedGroup(eos_id, group);
 		NotifySubscribers(eos_id, 0);
+		NotifySubscribersDetailed(eos_id, 0, group, false, true, false);
 		return returnvalue;
 	}
 
@@ -265,6 +321,7 @@ namespace Permissions
 	{
 		auto returnvalue = database->AddTribeToGroup(tribeId, group);
 		NotifySubscribers(L"", tribeId);
+		NotifySubscribersDetailed(L"", tribeId, group, true, false, true);
 		return returnvalue;
 	}
 
@@ -272,6 +329,7 @@ namespace Permissions
 	{
 		auto returnvalue = database->RemoveTribeFromGroup(tribeId, group);
 		NotifySubscribers(L"", tribeId);
+		NotifySubscribersDetailed(L"", tribeId, group, false, false, true);
 		return returnvalue;
 	}
 
@@ -279,6 +337,7 @@ namespace Permissions
 	{
 		auto returnvalue = database->AddTribeToTimedGroup(tribeId, group, secs, delaySecs);
 		NotifySubscribers(L"", tribeId);
+		NotifySubscribersDetailed(L"", tribeId, group, true, true, true);
 		return returnvalue;
 	}
 
@@ -286,6 +345,7 @@ namespace Permissions
 	{
 		auto returnvalue = database->RemoveTribeFromTimedGroup(tribeId, group);
 		NotifySubscribers(L"", tribeId);
+		NotifySubscribersDetailed(L"", tribeId, group, false, true, true);
 		return returnvalue;
 	}
 	
