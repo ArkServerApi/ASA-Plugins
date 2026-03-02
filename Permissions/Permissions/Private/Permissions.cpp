@@ -114,8 +114,12 @@ namespace Permissions
 	/// <summary>
 	/// Processes the list of detailed-subscribers and notifies them of the change
 	/// </summary>
-	/// <param name="eos_id"></param>
-	/// <param name="tribeid"></param>
+	/// <param name="eosId"></param>
+	/// <param name="tribeId"></param>
+	/// <param name="groupChanged"></param>
+	/// <param name="bAddedGroup"></param>
+	/// <param name="bIsTimedGroup"></param>
+	/// <param name="bIsTribeGroup"></param>
 	void NotifySubscribersDetailed(const FString& eosId, int tribeId, const FString& groupChanged, bool bAddedGroup, bool bIsTimedGroup, bool bIsTribeGroup)
 	{
 		for (const auto& subscriber : permissionGroupUpdatedDetailedSubscribers)
