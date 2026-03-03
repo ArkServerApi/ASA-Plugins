@@ -298,7 +298,6 @@ namespace Permissions
 
 	std::optional<std::string> RemovePlayerFromGroup(const FString& eos_id, const FString& group)
 	{
-		NotifySubscribers(eos_id, 0);
 		auto returnvalue = database->RemovePlayerFromGroup(eos_id, group);
 		NotifySubscribers(eos_id, 0);
 		if (!returnvalue.has_value()) // no error occured
@@ -308,7 +307,6 @@ namespace Permissions
 
 	std::optional<std::string> AddPlayerToTimedGroup(const FString& eos_id, const FString& group, int secs, int delaySecs)
 	{
-		NotifySubscribers(eos_id, 0);
 		auto returnvalue = database->AddPlayerToTimedGroup(eos_id, group, secs, delaySecs);
 		NotifySubscribers(eos_id, 0);
 		if(!returnvalue.has_value()) // no error occured
