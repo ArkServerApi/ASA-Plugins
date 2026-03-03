@@ -47,4 +47,7 @@ namespace Permissions
 
 	PERMISSIONS_API void SubscribePermissionGroupUpdatedCallback(FString CallbackName, const std::function<void(const FString&, int)>& callback);
 	PERMISSIONS_API void UnSubscribePermissionGroupUpdatedCallback(FString CallbackName);
+
+	PERMISSIONS_API void SubscribePermissionGroupUpdatedDetailedCallback(FString CallbackName, const std::function<void(const FString&, int, const FString&, bool, bool, bool)>& callback);
+	PERMISSIONS_API void UnSubscribePermissionGroupUpdatedDetailedCallback(FString CallbackName);
 }
