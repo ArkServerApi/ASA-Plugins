@@ -5,7 +5,9 @@
     "MysqlUser": "apitest",
     "MysqlPass": "12345",
     "MysqlDB": "apitest",
-    "MysqlPort": 3306
+    "MysqlPort": 3306,
+    "MysqlPlayersTable": "ArkShopPlayers",
+    "MysqlLogTable": "ArkShopLogTransactions"
   },
   "General": {
     "Discord": {

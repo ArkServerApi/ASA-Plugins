@@ -724,7 +724,8 @@ void Load()
 				mysql_conf.value("MysqlPass", ""),
 				mysql_conf.value("MysqlDB", ""),
 				mysql_conf.value("MysqlPlayersTable", "ArkShopPlayers"),
-				mysql_conf.value("MysqlPort", 3306));
+				mysql_conf.value("MysqlPort", 3306),
+				mysql_conf.value("MysqlLogTable", "ArkShopLogTransactions"));
 		}
 		else
 		{
