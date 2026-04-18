@@ -2,5 +2,6 @@
   "FullName": "Ark:SA Permissions",
   "Description": "Manage permissions groups",
   "Version": 1.2,
+  "PreventUnloading": true,
   "MinApiVersion": 1.19
 }
