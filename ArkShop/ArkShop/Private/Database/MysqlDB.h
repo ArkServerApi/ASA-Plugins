@@ -7,8 +7,8 @@
 class MySql : public IDatabase
 {
 public:
-	explicit MySql(std::string server, std::string username, std::string password, std::string db_name, std::string table_players, const int port)
-		: table_players_(move(table_players))
+	explicit MySql(std::string server, std::string username, std::string password, std::string db_name, std::string table_players, const int port, std::string table_log)
+		: table_players_(move(table_players)), table_log_(move(table_log))
 	{
 		try
 		{
@@ -41,6 +41,22 @@ public:
 			if (!result)
 			{
 				Log::GetLog()->critical("({} {}) Failed to create table!", __FILE__, __FUNCTION__);
+			}
+
+			result = db_.query(fmt::format("CREATE TABLE IF NOT EXISTS {} ("
+				"Id INT NOT NULL AUTO_INCREMENT,"
+				"EosId VARCHAR(50) NOT NULL,"
+				"ItemName VARCHAR(255) NOT NULL,"
+				"ItemAmount INT DEFAULT 1,"
+				"TotalPrice INT DEFAULT 0,"
+				"ServersId VARCHAR(100) NOT NULL DEFAULT '',"
+				"BuyerDate DATETIME DEFAULT CURRENT_TIMESTAMP,"
+				"PRIMARY KEY(Id),"
+				"INDEX idx_eosid (EosId ASC));", table_log_));
+
+			if (!result)
+			{
+				Log::GetLog()->critical("({} {}) Failed to create log transactions table!", __FILE__, __FUNCTION__);
 			}
 		}
 		catch (const std::exception& exception)
@@ -226,7 +242,23 @@ public:
 		}
 	}
 
+	bool LogTransaction(const FString& eos_id, const std::string& item_name, int item_amount, int total_price, const std::string& server_id) override
+	{
+		try
+		{
+			return db_.query(fmt::format(
+				"INSERT INTO {} (EosId, ItemName, ItemAmount, TotalPrice, ServersId) VALUES ('{}', '{}', {}, {}, '{}');",
+				table_log_, eos_id.ToString(), item_name, item_amount, total_price, server_id));
+		}
+		catch (const std::exception& exception)
+		{
+			Log::GetLog()->error("({} {}) Unexpected DB error {}", __FILE__, __FUNCTION__, exception.what());
+			return false;
+		}
+	}
+
 private:
 	daotk::mysql::connection db_;
 	std::string table_players_;
+	std::string table_log_;
 };
