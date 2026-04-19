@@ -3,6 +3,7 @@
   "Description": "Shop, Currency & Kits",
   "Version": 1.2,
   "MinApiVersion": 1.19,
+  "PreventUnloading": false,
   "Dependencies": [
     "Permissions"
   ]
