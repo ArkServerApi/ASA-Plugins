@@ -242,7 +242,7 @@ public:
 		}
 	}
 
-	bool LogTransaction(const FString& eos_id, const std::string& item_name, int item_amount, int total_price, const std::string& server_id) override
+	bool LogTransaction(const FString& eos_id, const std::string& item_name, int item_amount, int total_price, const std::string& server_id)
 	{
 		try
 		{
