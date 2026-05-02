@@ -1,11 +1,13 @@
 {
   "Mysql": {
-    "UseMysql": false,
+    "UseMysql": false, //If true ArkShop will use mysql instead of sqlite to store data, you must fill the rest of the mysql settings below for it to work, if false it will ignore the rest of the mysql settings and use sqlite
     "MysqlHost": "localhost",
     "MysqlUser": "apitest",
     "MysqlPass": "12345",
     "MysqlDB": "apitest",
-    "MysqlPort": 3306
+    "MysqlPort": 3306,
+    "MysqlPlayersTable": "ArkShopPlayers", //override the default table name for players (default is ArkShopPlayers)
+    "MysqlLogTable": "ArkShopLogTransactions" //override the default table name for transactions log (default is ArkShopLogTransactions)
   },
   "General": {
     "Discord": { //Used for discord Logging
