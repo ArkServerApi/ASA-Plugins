@@ -714,6 +714,9 @@ namespace ArkShop::Kits
 			if (!eos_id.IsEmpty() && !ArkShop::DBHelper::IsPlayerExists(eos_id))
 				database->TryAddNewPlayer(eos_id);
 
+			if (AsaApi::Tools::IsPluginLoaded("ArkShopUI"))
+				ArkShopUI::EnsureBuff(eos_id);
+
 			const std::string default_kit = config["General"].value("DefaultKit", "");
 			if (!default_kit.empty())
 			{

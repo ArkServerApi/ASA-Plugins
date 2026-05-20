@@ -81,4 +81,17 @@ namespace ArkShopUI
 
 		return addr(eos_id, kitdata);
 	}
+
+	inline ARK_API void EnsureBuff(const FString& eos_id)
+	{
+		using T = void (*) (const FString&);
+
+		HMODULE hmodule = GetModuleHandleA("ArkShopUI.dll");
+		if (!hmodule)
+			return;
+
+		T addr = (T)GetProcAddress(hmodule, "EnsureBuff");
+
+		return addr(eos_id);
+	}
 }
