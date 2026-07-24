@@ -7,7 +7,7 @@ namespace ArkShop
 	FORCEINLINE TArray<float> GetStatPoints(APrimalDinoCharacter* dino)
 	{
 		TArray<float> floats;
-		UPrimalCharacterStatusComponent* comp = dino->GetCharacterStatusComponent();
+		UPrimalCharacterStatusComponent* comp = dino->MyCharacterStatusComponentField();
 		int NumEntries = EPrimalCharacterStatusValue::MAX - 1;
 		for (int i = 0; i < NumEntries; i++)
 			floats.Add(
@@ -25,7 +25,7 @@ namespace ArkShop
 	FORCEINLINE TArray<float> GetCharacterStatsAsFloats(APrimalDinoCharacter* dino)
 	{
 		TArray<float> floats;
-		UPrimalCharacterStatusComponent* comp = dino->GetCharacterStatusComponent();
+		UPrimalCharacterStatusComponent* comp = dino->MyCharacterStatusComponentField();
 		int NumEntries = EPrimalCharacterStatusValue::MAX - 1;
 		for (int i = 0; i < NumEntries; i++)
 			floats.Add(comp->CurrentStatusValuesField()()[(EPrimalCharacterStatusValue::Type)i]);
