@@ -389,7 +389,7 @@ namespace ArkShop::Store
 			const int min_level = item_entry.value("MinLevel", 1);
 			const int max_level = item_entry.value("MaxLevel", 999);
 
-			auto* primal_character = static_cast<APrimalCharacter*>(player_controller->CharacterField().Get());
+			auto* primal_character = static_cast<APrimalCharacter*>(player_controller->GetPlayerCharacter());
 			UPrimalCharacterStatusComponent* char_component = primal_character->MyCharacterStatusComponentField();
 
 			const int level = char_component->BaseCharacterLevelField() + char_component->ExtraCharacterLevelField();
