@@ -96,7 +96,7 @@ namespace ArkShop::Store
 								)
 							);
 						}
-						
+
 						ApplyItemStats(out_items, armor, durability, damage);
 					}
 					else
@@ -178,7 +178,7 @@ namespace ArkShop::Store
 				const bool exec_as_admin = item.value("ExecuteAsAdmin", false);
 
 				FString fcommand = fmt::format(
-					command, 
+					command,
 					fmt::arg("eosid", eos_id.ToString()),
 					fmt::arg("eos_id", eos_id.ToString()),
 					fmt::arg("playerid", AsaApi::GetApiUtils().GetPlayerID(player_controller)),

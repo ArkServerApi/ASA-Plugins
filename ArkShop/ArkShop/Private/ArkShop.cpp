@@ -74,7 +74,7 @@ void ArkShop::PostToDiscord(const std::wstring log)
 
 	FString msg = L"{{\"content\":\"```stylus\\n{}```\",\"username\":\"{}\",\"avatar_url\":null}}";
 	FString output = FString::Format(*msg, log, ArkShop::discord_sender_name);
-  
+
 	auto myCallback = [](bool, std::string, std::unordered_map<std::string, std::string>) {};
 
 	bool result = API::Requests::Get().CreatePostRequest(
@@ -424,7 +424,6 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 			saddle = UPrimalItem::AddNewItem(saddleClass, dino->MyInventoryComponentField(), true, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true, false, false, false, AsaApi::GetApiUtils().GetWorld());
 		}
 
-
 		const FString cryo = FString(ArkShop::config["General"].value("CryoItemPath", "Blueprint'/Game/Extinction/CoreBlueprints/Weapons/PrimalItem_WeaponEmptyCryopod.PrimalItem_WeaponEmptyCryopod'"));
 		TSubclassOf<UPrimalItem> cryoClass = UVictoryCore::BPLoadClass(cryo);
 
@@ -443,7 +442,7 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 				if (player_controller->GetPlayerInventory())
 				{
 					UPrimalItem* item2 = player_controller->GetPlayerInventory()->AddItemObject(item);
-					
+
 					if (item2)
 						success = true;
 				}
