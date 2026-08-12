@@ -3,7 +3,13 @@
 
 #include "ArkShop.h"
 
+#include <algorithm>
+#include <array>
+#include <cctype>
 #include <fstream>
+#include <random>
+#include <sstream>
+#include <vector>
 
 #include <Permissions.h>
 #include <DBHelper.h>
@@ -28,6 +34,371 @@ DECLARE_HOOK(URCONServer_Init, bool, URCONServer*, FString, int, UShooterCheatMa
 
 FString closed_store_reason;
 bool store_enabled = true;
+
+namespace
+{
+	struct DinoTraitEntry
+	{
+		std::string name;
+		int tier = 0;
+	};
+
+	std::string Trim(std::string value)
+	{
+		const auto not_space = [](unsigned char ch)
+		{
+			return !std::isspace(ch);
+		};
+
+		value.erase(value.begin(), std::find_if(value.begin(), value.end(), not_space));
+		value.erase(std::find_if(value.rbegin(), value.rend(), not_space).base(), value.end());
+		return value;
+	}
+
+	bool ParseDinoTrait(std::string value, DinoTraitEntry& trait)
+	{
+		value = Trim(value);
+		if (value.empty() || value.back() != ']')
+			return false;
+
+		const size_t open = value.rfind('[');
+		if (open == std::string::npos || open == 0 || open + 1 >= value.size() - 1)
+			return false;
+
+		const std::string name = Trim(value.substr(0, open));
+		if (name.empty())
+			return false;
+
+		int tier = 0;
+		for (size_t i = open + 1; i + 1 < value.size(); ++i)
+		{
+			if (!std::isdigit(static_cast<unsigned char>(value[i])))
+				return false;
+
+			tier = (tier * 10) + (value[i] - '0');
+		}
+
+		if (tier < 1 || tier > 3)
+			return false;
+
+		trait.name = name;
+		trait.tier = tier;
+		return true;
+	}
+
+	FName MakeDinoTraitName(const DinoTraitEntry& trait)
+	{
+		std::ostringstream name;
+		name << trait.name << "[" << (trait.tier - 1) << "]";
+		return FName(name.str().c_str(), EFindName::FNAME_Add);
+	}
+
+	const nlohmann::json& DefaultDinoTraitsConfig()
+	{
+		static const nlohmann::json defaults = {
+			{"Enabled", false},
+			{"TierWeights", {
+				{"1", 74},
+				{"2", 22},
+				{"3", 4}
+			}},
+			{"Traits", {
+				"AberrantCarrier[1]",
+				"AberrantCarrier[2]",
+				"AberrantCarrier[3]",
+				"Aggressive[1]",
+				"Aggressive[2]",
+				"Angry[1]",
+				"Angry[2]",
+				"Athletic[1]",
+				"Athletic[2]",
+				"Athletic[3]",
+				"CarcassCarrier[1]",
+				"CarcassCarrier[2]",
+				"CarcassCarrier[3]",
+				"Carefree[1]",
+				"Cold[1]",
+				"Cold[2]",
+				"Cold[3]",
+				"Cowardly[1]",
+				"Cowardly[2]",
+				"Cowardly[3]",
+				"Distracting[1]",
+				"Diurnal[1]",
+				"Diurnal[2]",
+				"Diurnal[3]",
+				"Excitable[1]",
+				"ExoticCarrier[1]",
+				"ExoticCarrier[2]",
+				"ExoticCarrier[3]",
+				"ExtinctionCarrier[1]",
+				"ExtinctionCarrier[2]",
+				"ExtinctionCarrier[3]",
+				"FastLearner[1]",
+				"FastLearner[2]",
+				"FastLearner[3]",
+				"Fatty[1]",
+				"Fatty[2]",
+				"Fatty[3]",
+				"Frenetic[1]",
+				"Frenetic[2]",
+				"Frenetic[3]",
+				"Giantslaying[1]",
+				"Giantslaying[2]",
+				"HeavyHitting[1]",
+				"HeavyHitting[2]",
+				"HeavyHitting[3]",
+				"InheritFoodFrail[1]",
+				"InheritFoodFrail[2]",
+				"InheritFoodFrail[3]",
+				"InheritFoodMutable[1]",
+				"InheritFoodMutable[2]",
+				"InheritFoodMutable[3]",
+				"InheritFoodRobust[1]",
+				"InheritFoodRobust[2]",
+				"InheritFoodRobust[3]",
+				"InheritHealthFrail[1]",
+				"InheritHealthFrail[2]",
+				"InheritHealthFrail[3]",
+				"InheritHealthMutable[1]",
+				"InheritHealthMutable[2]",
+				"InheritHealthMutable[3]",
+				"InheritHealthRobust[1]",
+				"InheritHealthRobust[2]",
+				"InheritHealthRobust[3]",
+				"InheritMeleeFrail[1]",
+				"InheritMeleeFrail[2]",
+				"InheritMeleeFrail[3]",
+				"InheritMeleeMutable[1]",
+				"InheritMeleeMutable[2]",
+				"InheritMeleeMutable[3]",
+				"InheritMeleeRobust[1]",
+				"InheritMeleeRobust[2]",
+				"InheritMeleeRobust[3]",
+				"InheritOxygenFrail[1]",
+				"InheritOxygenFrail[2]",
+				"InheritOxygenFrail[3]",
+				"InheritOxygenMutable[1]",
+				"InheritOxygenMutable[2]",
+				"InheritOxygenMutable[3]",
+				"InheritOxygenRobust[1]",
+				"InheritOxygenRobust[2]",
+				"InheritOxygenRobust[3]",
+				"InheritStaminaFrail[1]",
+				"InheritStaminaFrail[2]",
+				"InheritStaminaFrail[3]",
+				"InheritStaminaMutable[1]",
+				"InheritStaminaMutable[2]",
+				"InheritStaminaMutable[3]",
+				"InheritStaminaRobust[1]",
+				"InheritStaminaRobust[2]",
+				"InheritStaminaRobust[3]",
+				"InheritWeightFrail[1]",
+				"InheritWeightFrail[2]",
+				"InheritWeightFrail[3]",
+				"InheritWeightMutable[1]",
+				"InheritWeightMutable[2]",
+				"InheritWeightMutable[3]",
+				"InheritWeightRobust[1]",
+				"InheritWeightRobust[2]",
+				"InheritWeightRobust[3]",
+				"Kingslaying[1]",
+				"Kingslaying[2]",
+				"Kingslaying[3]",
+				"MeatCarrier[1]",
+				"MeatCarrier[2]",
+				"MeatCarrier[3]",
+				"MineralCarrier[1]",
+				"MineralCarrier[2]",
+				"MineralCarrier[3]",
+				"Nocturnal[1]",
+				"Nocturnal[2]",
+				"Nocturnal[3]",
+				"Numb[1]",
+				"PlantCarrier[1]",
+				"PlantCarrier[2]",
+				"PlantCarrier[3]",
+				"Protective[1]",
+				"Protective[2]",
+				"QuickHitting[1]",
+				"QuickHitting[2]",
+				"QuickHitting[3]",
+				"ScorchedCarrier[1]",
+				"ScorchedCarrier[2]",
+				"ScorchedCarrier[3]",
+				"SlowMetabolism[1]",
+				"SlowMetabolism[2]",
+				"SlowMetabolism[3]",
+				"Sprinter[1]",
+				"Sprinter[2]",
+				"Sprinter[3]",
+				"Swimmer[1]",
+				"Swimmer[2]",
+				"Swimmer[3]",
+				"Tenacious[1]",
+				"Tenacious[2]",
+				"Tenacious[3]",
+				"Vampiric[1]",
+				"Warm[1]",
+				"Warm[2]",
+				"Warm[3]"
+			}}
+		};
+
+		return defaults;
+	}
+
+	bool EnsureDinoTraitsConfig(nlohmann::json& config)
+	{
+		bool updated = false;
+		if (!config["General"].is_object())
+		{
+			config["General"] = nlohmann::json::object();
+			updated = true;
+		}
+
+		auto& general = config["General"];
+		const auto& defaults = DefaultDinoTraitsConfig();
+		auto dino_traits_iter = general.find("DinoTraits");
+		if (dino_traits_iter == general.end() || !dino_traits_iter->is_object())
+		{
+			general["DinoTraits"] = defaults;
+			return true;
+		}
+
+		auto& dino_traits = general["DinoTraits"];
+		const auto enabled_iter = dino_traits.find("Enabled");
+		if (enabled_iter == dino_traits.end() || !enabled_iter->is_boolean())
+		{
+			dino_traits["Enabled"] = defaults["Enabled"];
+			updated = true;
+		}
+
+		auto weights_iter = dino_traits.find("TierWeights");
+		if (weights_iter == dino_traits.end() || !weights_iter->is_object())
+		{
+			dino_traits["TierWeights"] = defaults["TierWeights"];
+			updated = true;
+		}
+		else
+		{
+			auto& weights = dino_traits["TierWeights"];
+			for (const auto& default_weight : defaults["TierWeights"].items())
+			{
+				const auto weight_iter = weights.find(default_weight.key());
+				if (weight_iter == weights.end() || !weight_iter->is_number_integer())
+				{
+					weights[default_weight.key()] = default_weight.value();
+					updated = true;
+				}
+			}
+		}
+
+		const auto traits_iter = dino_traits.find("Traits");
+		if (traits_iter == dino_traits.end() || !traits_iter->is_array())
+		{
+			dino_traits["Traits"] = defaults["Traits"];
+			updated = true;
+		}
+
+		return updated;
+	}
+
+	std::array<int, 4> GetDinoTraitTierWeights(const nlohmann::json& trait_config)
+	{
+		std::array<int, 4> weights{ 0, 74, 22, 4 };
+		const auto weights_iter = trait_config.find("TierWeights");
+		if (weights_iter == trait_config.end() || !weights_iter->is_object())
+			return weights;
+
+		for (int tier = 1; tier <= 3; ++tier)
+		{
+			const auto weight_iter = weights_iter->find(std::to_string(tier));
+			if (weight_iter != weights_iter->end() && weight_iter->is_number_integer())
+			{
+				weights[tier] = weight_iter->get<int>();
+				if (weights[tier] < 0)
+					weights[tier] = 0;
+			}
+		}
+
+		return weights;
+	}
+
+	bool ChooseRandomDinoTrait(DinoTraitEntry& selected_trait)
+	{
+		const auto trait_config = ArkShop::config.value("General", nlohmann::json::object())
+			.value("DinoTraits", nlohmann::json::object());
+		if (!trait_config.is_object())
+			return false;
+
+		const auto traits = trait_config.value("Traits", nlohmann::json::array());
+		if (!traits.is_array() || traits.empty())
+			return false;
+
+		std::array<std::vector<DinoTraitEntry>, 4> traits_by_tier;
+		for (const auto& raw_trait : traits)
+		{
+			if (!raw_trait.is_string())
+				continue;
+
+			DinoTraitEntry trait;
+			if (ParseDinoTrait(raw_trait.get<std::string>(), trait))
+				traits_by_tier[trait.tier].push_back(trait);
+		}
+
+		const auto weights = GetDinoTraitTierWeights(trait_config);
+		int total_weight = 0;
+		for (int tier = 1; tier <= 3; ++tier)
+		{
+			if (!traits_by_tier[tier].empty())
+				total_weight += weights[tier];
+		}
+
+		if (total_weight <= 0)
+			return false;
+
+		static std::mt19937 rng{ std::random_device{}() };
+		std::uniform_int_distribution<int> tier_dist(1, total_weight);
+		int roll = tier_dist(rng);
+		int selected_tier = 0;
+
+		for (int tier = 1; tier <= 3; ++tier)
+		{
+			if (traits_by_tier[tier].empty())
+				continue;
+
+			roll -= weights[tier];
+			if (roll <= 0)
+			{
+				selected_tier = tier;
+				break;
+			}
+		}
+
+		if (selected_tier == 0)
+			return false;
+
+		const auto& selected_traits = traits_by_tier[selected_tier];
+		std::uniform_int_distribution<size_t> trait_dist(0, selected_traits.size() - 1);
+		selected_trait = selected_traits[trait_dist(rng)];
+		return true;
+	}
+
+	void ApplyRandomDinoTrait(APrimalDinoCharacter* dino)
+	{
+		if (!dino || dino->GeneTraitsField().Num() > 0 || dino->NextBabyGeneTraitsField().Num() > 0)
+			return;
+
+		DinoTraitEntry trait;
+		if (!ChooseRandomDinoTrait(trait))
+			return;
+
+		const FName trait_name = MakeDinoTraitName(trait);
+		dino->GeneTraitsField().Add(trait_name);
+		dino->NextBabyGeneTraitsField().Add(trait_name);
+	}
+}
 
 FString ArkShop::SetMapName()
 {
@@ -396,7 +767,7 @@ void HandleGacha(APrimalDinoCharacter* dino, nlohmann::json resourceOverrides)
 }
 
 //Spawns dino or gives in cryopod
-bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, bool neutered, std::string gender, std::string blueprint, std::string saddleblueprint, bool PreventCryo, int stryderhead, int stryderchest, nlohmann::json resourceOverrides)
+bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, bool neutered, std::string gender, std::string blueprint, std::string saddleblueprint, bool PreventCryo, int stryderhead, int stryderchest, nlohmann::json resourceOverrides, bool giveRandomTrait)
 {
 	bool success = false;
 	const FString fblueprint(blueprint.c_str());
@@ -407,6 +778,9 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 			HandleStryder(dino, stryderhead, stryderchest);
 		else if (fblueprint.Contains("Blueprint'/Game/Extinction/Dinos/Gacha/Gacha_Character_BP.Gacha_Character_BP'"))
 			HandleGacha(dino, resourceOverrides);
+
+		if (giveRandomTrait)
+			ApplyRandomDinoTrait(dino);
 
 		if (dino->bUsesGender()())
 		{
@@ -516,7 +890,7 @@ bool ArkShop::ShouldPreventStoreUse(AShooterPlayerController* player_controller)
 		if (!preventBuying && config["General"].value("PreventUseNoglin", true) && (character->HasBuff(NoglinBuffClass.Get(false), true) || character->HasBuff(NoglinBuffClass2.Get(false), true) || character->HasBuff(NoglinBuffClass3.Get(false), true)))
 			preventBuying = true;
 
-		if (!preventBuying && config["General"].value("PreventUseUnconscious", true) && !character->IsConscious())
+		if (!preventBuying && config["General"].value("PreventUseUnconscious", true) && character->bIsSleeping()())
 			preventBuying = true;
 
 		if (!preventBuying && config["General"].value("PreventUseHandcuffed", true) && character->CurrentWeaponField() && character->CurrentWeaponField()->AssociatedPrimalItemField())
@@ -634,6 +1008,18 @@ void ReadConfig()
 	file >> ArkShop::config;
 
 	file.close();
+
+	if (EnsureDinoTraitsConfig(ArkShop::config))
+	{
+		std::ofstream output{ config_path };
+		if (!output.is_open())
+		{
+			throw std::runtime_error("Can't update config.json");
+		}
+
+		output << ArkShop::config.dump(2);
+		output.close();
+	}
 }
 
 void ReloadConfig(APlayerController* player_controller, FString* /*unused*/, bool /*unused*/)

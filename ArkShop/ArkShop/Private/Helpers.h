@@ -4,6 +4,24 @@
 
 namespace ArkShop
 {
+	FORCEINLINE bool IsPlayerDead(AShooterPlayerController* player_controller)
+	{
+		if (player_controller == nullptr)
+			return true;
+
+		AShooterCharacter* character = player_controller->BaseGetPlayerCharacter();
+		return character == nullptr || character->bIsDead()();
+	}
+
+	FORCEINLINE bool IsRidingDino(AShooterPlayerController* player_controller)
+	{
+		if (player_controller == nullptr)
+			return false;
+
+		AShooterCharacter* character = player_controller->BaseGetPlayerCharacter();
+		return character != nullptr && character->bIsRiding()();
+	}
+
 	FORCEINLINE TArray<float> GetStatPoints(APrimalDinoCharacter* dino)
 	{
 		TArray<float> floats;

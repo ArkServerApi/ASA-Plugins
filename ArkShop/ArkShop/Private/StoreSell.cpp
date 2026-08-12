@@ -4,6 +4,7 @@
 
 #include "ArkShop.h"
 #include "DBHelper.h"
+#include "Helpers.h"
 #include "ShopLog.h"
 #include <ArkShopUIHelper.h>
 
@@ -103,7 +104,7 @@ namespace ArkShop::StoreSell
 
 	bool Sell(AShooterPlayerController* player_controller, const FString& item_id, int amount)
 	{
-		if (AsaApi::IApiUtils::IsPlayerDead(player_controller))
+		if (ArkShop::IsPlayerDead(player_controller))
 		{
 			return false;
 		}
