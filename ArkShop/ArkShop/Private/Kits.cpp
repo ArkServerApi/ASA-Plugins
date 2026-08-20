@@ -5,7 +5,6 @@
 #include <Points.h>
 
 #include "ArkShop.h"
-#include "Helpers.h"
 #include "ShopLog.h"
 #include "ArkShopUIHelper.h"
 
@@ -126,7 +125,7 @@ namespace ArkShop::Kits
 	*/
 	bool CanUseKit(AShooterPlayerController* player_controller, const FString& eos_id, const FString& kit_name)
 	{
-		if (ArkShop::IsPlayerDead(player_controller))
+		if (player_controller == nullptr || AsaApi::IApiUtils::IsPlayerDead(player_controller))
 		{
 			return false;
 		}
@@ -287,7 +286,7 @@ namespace ArkShop::Kits
 	 */
 	void RedeemKit(AShooterPlayerController* player_controller, const FString& kit_name, bool should_log, bool from_spawn, int senderPlatform)
 	{
-		if (ArkShop::IsPlayerDead(player_controller))
+		if (AsaApi::IApiUtils::IsPlayerDead(player_controller))
 		{
 			return;
 		}
@@ -492,7 +491,7 @@ namespace ArkShop::Kits
 
 	void BuyKit(AShooterPlayerController* player_controller, FString* message, int, int senderPlatform)
 	{
-		if (ArkShop::IsPlayerDead(player_controller))
+		if (AsaApi::IApiUtils::IsPlayerDead(player_controller))
 			return;
 
 		TArray<FString> parsed;
@@ -708,9 +707,7 @@ namespace ArkShop::Kits
 	{
 		AShooterCharacter_AuthPostSpawnInit_original(_this);
 
-		AShooterPlayerController* player = _this != nullptr
-			? static_cast<AShooterPlayerController*>(_this->GetOwnerController())
-			: nullptr;
+		AShooterPlayerController* player = AsaApi::GetApiUtils().FindControllerFromCharacter(static_cast<AShooterCharacter*>(_this));
 		if (player != nullptr)
 		{
 			const FString& eos_id = AsaApi::IApiUtils::GetEOSIDFromController(player);

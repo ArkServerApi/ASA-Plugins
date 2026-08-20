@@ -5,7 +5,6 @@
 
 #include "ArkShop.h"
 #include "DBHelper.h"
-#include "Helpers.h"
 #include "ShopLog.h"
 #include "ArkShopUIHelper.h"
 #include "Kits.h"
@@ -136,35 +135,19 @@ namespace ArkShop::Store
 		if (points >= price && Points::SpendPoints(price, eos_id))
 		{
 			auto items_map = item_entry["Items"];
-			auto* player_state = reinterpret_cast<AShooterPlayerState*>(player_controller->PlayerStateField().Get());
-
 			for (const auto& item : items_map)
 			{
 				const std::string blueprint = item.value("Blueprint", "");
-				if (blueprint.empty() || player_state == nullptr)
-					continue;
-
 				FString fblueprint(blueprint);
-				UClass* item_class = UVictoryCore::BPLoadClass(fblueprint);
-				if (item_class == nullptr)
-					continue;
 
-				TSubclassOf<UPrimalItem> item_class_ref(item_class);
-				player_state->ServerUnlockEngram(item_class_ref, true, true);
-				success = true;
+				auto* cheat_manager = static_cast<UShooterCheatManager*>(player_controller->CheatManagerField().Get());
+				cheat_manager->UnlockEngram(&fblueprint);
 			}
 
-			if (success)
-			{
-				AsaApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"),
-					*GetText("BoughtItem"));
-			}
-			else
-			{
-				AsaApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"), *GetText("RefundError"));
-				Points::AddPoints(price, eos_id);
-			}
+			AsaApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"),
+				*GetText("BoughtItem"));
 
+			success = true;
 		}
 		else
 		{
@@ -289,20 +272,14 @@ namespace ArkShop::Store
 		if (points >= price && Points::SpendPoints(price, eos_id))
 		{
 			FString fclass_name(class_name.c_str());
-			auto* cheat_manager = static_cast<UShooterCheatManager*>(player_controller->CheatManagerField().Get());
 
-			if (cheat_manager != nullptr && cheat_manager->DoSummon(&fclass_name) != nullptr)
-			{
-				AsaApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"),
-					*GetText("BoughtBeacon"));
+			auto* cheatManager = static_cast<UShooterCheatManager*>(player_controller->CheatManagerField().Get());
+			cheatManager->Summon(&fclass_name);
 
-				success = true;
-			}
-			else
-			{
-				AsaApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"), *GetText("RefundError"));
-				Points::AddPoints(price, eos_id);
-			}
+			AsaApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"),
+				*GetText("BoughtBeacon"));
+
+			success = true;
 		}
 		else
 		{
@@ -325,7 +302,7 @@ namespace ArkShop::Store
 		const float amount = item_entry.value("Amount", 1);
 		const bool give_to_dino = item_entry.value("GiveToDino", false);
 
-		if (!give_to_dino && ArkShop::IsRidingDino(player_controller))
+		if (!give_to_dino && AsaApi::IApiUtils::IsRidingDino(player_controller))
 		{
 			AsaApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"),
 				*GetText("RidingDino"));
@@ -354,7 +331,7 @@ namespace ArkShop::Store
 
 	bool Buy(AShooterPlayerController* player_controller, const FString& item_id, int amount)
 	{
-		if (ArkShop::IsPlayerDead(player_controller))
+		if (AsaApi::IApiUtils::IsPlayerDead(player_controller))
 		{
 			return false;
 		}
