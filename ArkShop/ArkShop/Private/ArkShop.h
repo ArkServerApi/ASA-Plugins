@@ -17,7 +17,7 @@ namespace ArkShop
 	float getStatValue(float StatModifier, float InitialValueConstant, float RandomizerRangeMultiplier, float StateModifierScale, bool bDisplayAsPercent);
 	void ApplyItemStats(TArray<UPrimalItem*> items, int armor, int durability, int damage);
 	FCustomItemData GetDinoCustomItemData(APrimalDinoCharacter* dino, UPrimalItem* saddle);
-	bool GiveDino(AShooterPlayerController* player_controller, int level, bool neutered, std::string gender, std::string blueprint, std::string saddleblueprint, bool PreventCryo, int stryderhead = -1, int stryderchest = -1, nlohmann::json resourceOverrides = "");
+	bool GiveDino(AShooterPlayerController* player_controller, int level, bool neutered, std::string gender, std::string blueprint, std::string saddleblueprint, bool PreventCryo, int stryderhead = -1, int stryderchest = -1, nlohmann::json resourceOverrides = "", bool giveRandomTrait = false);
 	bool ShouldPreventStoreUse(AShooterPlayerController* player_controller);
 	FString GetText(const std::string& str);
 	bool IsStoreEnabled(AShooterPlayerController* player_controller);

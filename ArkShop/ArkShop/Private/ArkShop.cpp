@@ -3,6 +3,7 @@
 
 #include "ArkShop.h"
 
+#include <cstdlib>
 #include <fstream>
 
 #include <Permissions.h>
@@ -15,6 +16,7 @@
 #include "TimedRewards.h"
 #include <ArkShopUIHelper.h>
 #include "Helpers.h"
+#include "Tools.h"
 
 #include "Requests.h"
 #include "Ark/AsaApiUtilsMessagingManager.h"
@@ -28,6 +30,137 @@ DECLARE_HOOK(URCONServer_Init, bool, URCONServer*, FString, int, UShooterCheatMa
 
 FString closed_store_reason;
 bool store_enabled = true;
+
+namespace
+{
+	int GetDinoTraitTier(const std::string& trait)
+	{
+		const size_t open = trait.rfind('[');
+		const size_t close = trait.rfind(']');
+		if (open == std::string::npos || close == std::string::npos || close <= open + 1)
+			return 0;
+
+		const int tier = std::atoi(trait.substr(open + 1, close - open - 1).c_str());
+		return tier >= 1 && tier <= 3 ? tier : 0;
+	}
+
+	int GetDinoTraitWeight(const nlohmann::json& trait_config, int tier)
+	{
+		int weights[4] = { 0, 74, 22, 4 };
+
+		const auto weights_iter = trait_config.find("TierWeights");
+		if (weights_iter != trait_config.end() && weights_iter->is_object())
+		{
+			const auto weight_iter = weights_iter->find(std::to_string(tier));
+			if (weight_iter != weights_iter->end() && weight_iter->is_number_integer())
+			{
+				weights[tier] = weight_iter->get<int>();
+				if (weights[tier] < 0)
+					weights[tier] = 0;
+			}
+		}
+
+		return weights[tier];
+	}
+
+	const nlohmann::json* GetDinoTraitsConfig()
+	{
+		const auto general_iter = ArkShop::config.find("General");
+		if (general_iter == ArkShop::config.end() || !general_iter->is_object())
+			return nullptr;
+
+		const auto traits_iter = general_iter->find("DinoTraits");
+		if (traits_iter == general_iter->end() || !traits_iter->is_object())
+			return nullptr;
+
+		return &(*traits_iter);
+	}
+
+	FName GetTraitNameForDino(std::string trait)
+	{
+		const int tier = GetDinoTraitTier(trait);
+		const size_t open = trait.rfind('[');
+		const size_t close = trait.rfind(']');
+
+		if (tier > 0 && open != std::string::npos && close != std::string::npos && close > open)
+			trait.replace(open + 1, close - open - 1, std::to_string(tier - 1));
+
+		return FName(trait.c_str(), EFindName::FNAME_Add);
+	}
+
+	bool ChooseRandomDinoTrait(std::string& selected_trait)
+	{
+		const nlohmann::json* trait_config = GetDinoTraitsConfig();
+		if (trait_config == nullptr)
+			return false;
+
+		const auto traits_iter = trait_config->find("Traits");
+		if (traits_iter == trait_config->end() || !traits_iter->is_array())
+			return false;
+
+		int trait_counts[4] = { 0, 0, 0, 0 };
+		for (const auto& trait : *traits_iter)
+		{
+			if (trait.is_string())
+				++trait_counts[GetDinoTraitTier(trait.get<std::string>())];
+		}
+
+		int total_weight = 0;
+		for (int tier = 1; tier <= 3; ++tier)
+		{
+			if (trait_counts[tier] > 0)
+				total_weight += GetDinoTraitWeight(*trait_config, tier);
+		}
+
+		if (total_weight <= 0)
+			return false;
+
+		int roll = ArkShop::Tools::GetRandomNumber(1, total_weight);
+		int selected_tier = 0;
+		for (int tier = 1; tier <= 3; ++tier)
+		{
+			if (trait_counts[tier] == 0)
+				continue;
+
+			roll -= GetDinoTraitWeight(*trait_config, tier);
+			if (roll <= 0)
+			{
+				selected_tier = tier;
+				break;
+			}
+		}
+
+		int trait_roll = ArkShop::Tools::GetRandomNumber(1, trait_counts[selected_tier]);
+		for (const auto& trait : *traits_iter)
+		{
+			if (!trait.is_string())
+				continue;
+
+			std::string trait_name = trait.get<std::string>();
+			if (GetDinoTraitTier(trait_name) == selected_tier && --trait_roll == 0)
+			{
+				selected_trait = trait_name;
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	void ApplyRandomDinoTrait(APrimalDinoCharacter* dino)
+	{
+		if (!dino || dino->GeneTraitsField().Num() > 0 || dino->NextBabyGeneTraitsField().Num() > 0)
+			return;
+
+		std::string trait;
+		if (!ChooseRandomDinoTrait(trait))
+			return;
+
+		const FName trait_name = GetTraitNameForDino(trait);
+		dino->GeneTraitsField().Add(trait_name);
+		dino->NextBabyGeneTraitsField().Add(trait_name);
+	}
+}
 
 FString ArkShop::SetMapName()
 {
@@ -396,7 +529,7 @@ void HandleGacha(APrimalDinoCharacter* dino, nlohmann::json resourceOverrides)
 }
 
 //Spawns dino or gives in cryopod
-bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, bool neutered, std::string gender, std::string blueprint, std::string saddleblueprint, bool PreventCryo, int stryderhead, int stryderchest, nlohmann::json resourceOverrides)
+bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, bool neutered, std::string gender, std::string blueprint, std::string saddleblueprint, bool PreventCryo, int stryderhead, int stryderchest, nlohmann::json resourceOverrides, bool giveRandomTrait)
 {
 	bool success = false;
 	const FString fblueprint(blueprint.c_str());
@@ -407,6 +540,9 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 			HandleStryder(dino, stryderhead, stryderchest);
 		else if (fblueprint.Contains("Blueprint'/Game/Extinction/Dinos/Gacha/Gacha_Character_BP.Gacha_Character_BP'"))
 			HandleGacha(dino, resourceOverrides);
+
+		if (giveRandomTrait)
+			ApplyRandomDinoTrait(dino);
 
 		if (dino->bUsesGender()())
 		{

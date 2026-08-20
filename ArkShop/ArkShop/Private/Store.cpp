@@ -228,12 +228,16 @@ namespace ArkShop::Store
 		const int stryderhead = item_entry.value("StryderHead", -1);
 		const int stryderchest = item_entry.value("StryderChest", -1);
 		nlohmann::json resourceoverrides = item_entry.value("GachaResources", nlohmann::json());
+		const auto trait_config = ArkShop::config.value("General", nlohmann::json::object())
+			.value("DinoTraits", nlohmann::json::object());
+		const bool defaultRandomTrait = trait_config.is_object() && trait_config.value("Enabled", false);
+		const bool giveRandomTrait = item_entry.value("GiveRandomTrait", defaultRandomTrait);
 
 		const int points = Points::GetPoints(eos_id);
 
 		if (points >= price && Points::SpendPoints(price, eos_id))
 		{
-			success = ArkShop::GiveDino(player_controller, level, neutered, gender, blueprint, saddleblueprint, preventCryo, stryderhead, stryderchest, resourceoverrides);
+			success = ArkShop::GiveDino(player_controller, level, neutered, gender, blueprint, saddleblueprint, preventCryo, stryderhead, stryderchest, resourceoverrides, giveRandomTrait);
 		}
 		else
 		{
