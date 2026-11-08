@@ -74,7 +74,7 @@ void ArkShop::PostToDiscord(const std::wstring log)
 
 	FString msg = L"{{\"content\":\"```stylus\\n{}```\",\"username\":\"{}\",\"avatar_url\":null}}";
 	FString output = FString::Format(*msg, log, ArkShop::discord_sender_name);
-  
+
 	auto myCallback = [](bool, std::string, std::unordered_map<std::string, std::string>) {};
 
 	bool result = API::Requests::Get().CreatePostRequest(
@@ -287,7 +287,7 @@ void HandleStryder(APrimalDinoCharacter* dino, int stryderhead, int stryderchest
 			head->RemoveItemFromInventory(true, false);
 
 			UClass* Class = UVictoryCore::BPLoadClass(attachmentBP);
-			UPrimalItem* item = UPrimalItem::AddNewItem(Class, dino->MyInventoryComponentField(), true, true, 1, true, 1, false, 0, false, nullptr, 0, false, false, true, false, false);
+			UPrimalItem* item = UPrimalItem::AddNewItem(Class, dino->MyInventoryComponentField(), true, true, 1, true, 1, false, 0, false, nullptr, 0, false, false, true, false, false, false, AsaApi::GetApiUtils().GetWorld());
 			if (item)
 			{
 				FProperty* setHeadAttachment = dino->FindProperty(FName("set head attachment", EFindName::FNAME_Add));
@@ -332,7 +332,7 @@ void HandleStryder(APrimalDinoCharacter* dino, int stryderhead, int stryderchest
 			chest->RemoveItemFromInventory(true, false);
 
 			UClass* Class = UVictoryCore::BPLoadClass(attachmentBP);
-			UPrimalItem* item = UPrimalItem::AddNewItem(Class, dino->MyInventoryComponentField(), true, true, 1, true, 1, false, 0, false, nullptr, 0, false, false, true, false, false);
+			UPrimalItem* item = UPrimalItem::AddNewItem(Class, dino->MyInventoryComponentField(), true, true, 1, true, 1, false, 0, false, nullptr, 0, false, false, true, false, false, false, AsaApi::GetApiUtils().GetWorld());
 			if (item)
 			{
 				FProperty* setChestAttachment = dino->FindProperty(FName("set chest attachment", EFindName::FNAME_Add));
@@ -421,16 +421,15 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 		{
 			FString fsaddleblueprint(saddleblueprint.c_str());
 			UClass* saddleClass = UVictoryCore::BPLoadClass(fsaddleblueprint);
-			saddle = UPrimalItem::AddNewItem(saddleClass, dino->MyInventoryComponentField(), true, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true, false, false);
+			saddle = UPrimalItem::AddNewItem(saddleClass, dino->MyInventoryComponentField(), true, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true, false, false, false, AsaApi::GetApiUtils().GetWorld());
 		}
-
 
 		const FString cryo = FString(ArkShop::config["General"].value("CryoItemPath", "Blueprint'/Game/Extinction/CoreBlueprints/Weapons/PrimalItem_WeaponEmptyCryopod.PrimalItem_WeaponEmptyCryopod'"));
 		TSubclassOf<UPrimalItem> cryoClass = UVictoryCore::BPLoadClass(cryo);
 
 		if (!PreventCryo && cryoClass.uClass != nullptr && ArkShop::config["General"].value("GiveDinosInCryopods", false))
 		{
-			UPrimalItem* item = UPrimalItem::AddNewItem(cryoClass, nullptr, false, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true, false, false);
+			UPrimalItem* item = UPrimalItem::AddNewItem(cryoClass, nullptr, false, false, 0, false, 0, false, 0, false, nullptr, 0, false, false, true, false, false, false, AsaApi::GetApiUtils().GetWorld());
 			if (item)
 			{
 				if (ArkShop::config["General"].value("CryoLimitedTime", false))
@@ -440,10 +439,10 @@ bool ArkShop::GiveDino(AShooterPlayerController* player_controller, int level, b
 				item->SetCustomItemData(&customItemData);
 				item->UpdatedItem(true, false);
 
-				if (player_controller->GetPlayerInventoryComponent())
+				if (player_controller->GetPlayerInventory())
 				{
-					UPrimalItem* item2 = player_controller->GetPlayerInventoryComponent()->AddItemObject(item);
-					
+					UPrimalItem* item2 = player_controller->GetPlayerInventory()->AddItemObject(item);
+
 					if (item2)
 						success = true;
 				}

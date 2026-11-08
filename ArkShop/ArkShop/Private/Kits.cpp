@@ -145,7 +145,7 @@ namespace ArkShop::Kits
 		const int min_level = kit_entry.value("MinLevel", 1);
 		const int max_level = kit_entry.value("MaxLevel", 999);
 
-		auto* primal_character = static_cast<APrimalCharacter*>(player_controller->CharacterField().Get());
+		auto* primal_character = static_cast<APrimalCharacter*>(player_controller->GetPlayerCharacter());
 		UPrimalCharacterStatusComponent* char_component = primal_character->MyCharacterStatusComponentField();
 		if (char_component == nullptr)
 		{
@@ -302,7 +302,7 @@ namespace ArkShop::Kits
 				return;
 			}
 
-			if (player_controller->GetPlayerInventoryComponent() && player_controller->GetPlayerInventoryComponent()->IsAtMaxInventoryItems())
+			if (player_controller->GetPlayerInventory() && player_controller->GetPlayerInventory()->IsAtMaxInventoryItems())
 			{
 				AsaApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"),
 					*GetText("InventoryIsFull"));

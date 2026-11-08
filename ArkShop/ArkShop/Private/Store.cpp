@@ -62,7 +62,7 @@ namespace ArkShop::Store
 					}
 				}
 
-				UPrimalInventoryComponent* playerInventory = player_controller->GetPlayerInventoryComponent();
+				UPrimalInventoryComponent* playerInventory = player_controller->GetPlayerInventory();
 				if (playerInventory)
 				{
 					if (stacksInOne || force_blueprint)
@@ -90,17 +90,19 @@ namespace ArkShop::Store
 									false,
 									true,
 									false,
-									false
+									false,
+									false,
+									AsaApi::GetApiUtils().GetWorld()
 								)
 							);
 						}
-						
+
 						ApplyItemStats(out_items, armor, durability, damage);
 					}
 					else
 					{
 						int totalAmount = amount * default_amount;
-						playerInventory->IncrementItemTemplateQuantity(itemClass, totalAmount, true, force_blueprint, nullptr, nullptr, false, false, false, false, true, false, false, false, false, nullptr);
+						playerInventory->IncrementItemTemplateQuantity(itemClass, totalAmount, true, force_blueprint, nullptr, nullptr, false, false, false, false, true, false, false, false, false, false, nullptr);
 					}
 				}
 			}
@@ -176,7 +178,7 @@ namespace ArkShop::Store
 				const bool exec_as_admin = item.value("ExecuteAsAdmin", false);
 
 				FString fcommand = fmt::format(
-					command, 
+					command,
 					fmt::arg("eosid", eos_id.ToString()),
 					fmt::arg("eos_id", eos_id.ToString()),
 					fmt::arg("playerid", AsaApi::GetApiUtils().GetPlayerID(player_controller)),
@@ -387,7 +389,7 @@ namespace ArkShop::Store
 			const int min_level = item_entry.value("MinLevel", 1);
 			const int max_level = item_entry.value("MaxLevel", 999);
 
-			auto* primal_character = static_cast<APrimalCharacter*>(player_controller->CharacterField().Get());
+			auto* primal_character = static_cast<APrimalCharacter*>(player_controller->GetPlayerCharacter());
 			UPrimalCharacterStatusComponent* char_component = primal_character->MyCharacterStatusComponentField();
 
 			const int level = char_component->BaseCharacterLevelField() + char_component->ExtraCharacterLevelField();
