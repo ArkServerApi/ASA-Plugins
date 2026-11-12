@@ -30,6 +30,16 @@ namespace Permissions
 	float TextSize = 1.5f;
 	float DisplayTime = 3.0f;
 
+	// Converts an hours argument ("1.5") to whole seconds. Throws std::out_of_range for negative values
+	// or anything over ten years, so the callers' catch reports it as a parsing error.
+	long HoursToSeconds(const FString& hours_str)
+	{
+		const double hours = std::stod(*hours_str);
+		if (!(hours >= 0.0) || hours > 87600.0)
+			throw std::out_of_range("hours must be between 0 and 87600");
+		return static_cast<long>(hours * 3600.0);
+	}
+
 
 	FTribeData* GetTribeData(AShooterPlayerController* playerController)
 	{
@@ -184,9 +194,9 @@ namespace Permissions
 
 		try
 		{
-			secs = std::stof(*parsed[3]) * 3600;
+			secs = HoursToSeconds(*parsed[3]);
 			if (parsed.IsValidIndex(4)) {
-				delaySecs = std::stof(*parsed[4]) * 3600;
+				delaySecs = HoursToSeconds(*parsed[4]);
 				secs += delaySecs;
 			}
 		}
@@ -263,7 +273,7 @@ namespace Permissions
 
 		try
 		{
-			tribe_id = std::stoull(*parsed[1]);
+			tribe_id = std::stoi(*parsed[1]);
 		}
 		catch (const std::exception& exception)
 		{
@@ -306,7 +316,7 @@ namespace Permissions
 
 		try
 		{
-			tribe_id = std::stoull(*parsed[1]);
+			tribe_id = std::stoi(*parsed[1]);
 		}
 		catch (const std::exception& exception)
 		{
@@ -349,10 +359,10 @@ namespace Permissions
 
 		try
 		{
-			tribe_id = std::stoull(*parsed[1]);
-			secs = std::stof(*parsed[3]) * 3600;
+			tribe_id = std::stoi(*parsed[1]);
+			secs = HoursToSeconds(*parsed[3]);
 			if (parsed.IsValidIndex(4)) {
-				delaySecs = std::stof(*parsed[4]) * 3600;
+				delaySecs = HoursToSeconds(*parsed[4]);
 				secs += delaySecs;
 			}
 		}
@@ -398,7 +408,7 @@ namespace Permissions
 
 		try
 		{
-			tribe_id = std::stoull(*parsed[1]);
+			tribe_id = std::stoi(*parsed[1]);
 		}
 		catch (const std::exception& exception)
 		{
@@ -551,36 +561,36 @@ namespace Permissions
 	}
 
 	// PlayerGroups
-	std::string getTimeLeft(int secs, int intervalsToShow) {
-		int days, hours, mins;
+	std::string getTimeLeft(long long secs, int intervalsToShow) {
+		long long days, hours, mins;
 		std::string timeLeft = "";
-		int secsLeft = secs;
+		long long secsLeft = secs;
 		int shown = 0;
 		if (secsLeft > 0) {
 			days = secsLeft / 86400;
 			if (days > 0 && intervalsToShow > shown) {
 				if (timeLeft.size() > 0) timeLeft += ", ";
-				timeLeft += fmt::format("{} Day{}", (int)days, (days > 1 ? "s" : ""));
+				timeLeft += fmt::format("{} Day{}", days, (days > 1 ? "s" : ""));
 				secsLeft -= days * 86400;
 				shown++;
 			}
 			hours = secsLeft / 3600;
 			if (hours > 0 && intervalsToShow > shown) {
 				if (timeLeft.size() > 0) timeLeft += ", ";
-				timeLeft += fmt::format("{} Hr{}", (int)hours, (hours > 1 ? "s" : ""));
+				timeLeft += fmt::format("{} Hr{}", hours, (hours > 1 ? "s" : ""));
 				secsLeft -= hours * 3600;
 				shown++;
 			}
 			mins = secsLeft / 60;
 			if (mins > 0 && intervalsToShow > shown) {
 				if (timeLeft.size() > 0) timeLeft += ", ";
-				timeLeft += fmt::format("{} Min{}", (int)mins, (mins > 1 ? "s" : ""));
+				timeLeft += fmt::format("{} Min{}", mins, (mins > 1 ? "s" : ""));
 				secsLeft -= mins * 60;
 				shown++;
 			}
 			if (secsLeft > 0 && intervalsToShow > shown) {
 				if (timeLeft.size() > 0) timeLeft += ", ";
-				timeLeft += fmt::format("{} Sec{}", (int)secsLeft, (secsLeft > 1 ? "s" : ""));
+				timeLeft += fmt::format("{} Sec{}", secsLeft, (secsLeft > 1 ? "s" : ""));
 				shown++;
 			}
 		}
@@ -731,7 +741,7 @@ namespace Permissions
 
 		try
 		{
-			tribe_id = std::stoull(*parsed[1]);
+			tribe_id = std::stoi(*parsed[1]);
 		}
 		catch (const std::exception& exception)
 		{
