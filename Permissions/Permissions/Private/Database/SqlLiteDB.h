@@ -183,11 +183,20 @@ public:
 	{
 		TArray<FString> members;
 
-		std::lock_guard<std::mutex> lg(playersMutex);
-		for (auto& players : permissionPlayers)
+		// Copy the ids and release the lock first: IsPlayerInGroup takes playersMutex itself,
+		// and std::mutex can't be locked twice by the same thread.
+		std::vector<FString> eos_ids;
 		{
-			if (Permissions::IsPlayerInGroup(players.first, group))
-				members.Add(players.first);
+			std::lock_guard<std::mutex> lg(playersMutex);
+			eos_ids.reserve(permissionPlayers.size());
+			for (const auto& player : permissionPlayers)
+				eos_ids.push_back(player.first);
+		}
+
+		for (const FString& eos_id : eos_ids)
+		{
+			if (Permissions::IsPlayerInGroup(eos_id, group))
+				members.Add(eos_id);
 		}
 
 		return members;
@@ -271,6 +280,9 @@ public:
 
 	std::optional<std::string> AddGroup(const FString& group) override
 	{
+		if (auto invalid = ValidateGroupName(group))
+			return invalid;
+
 		if (IsGroupExists(group))
 			return "Group already exists";
 
@@ -507,12 +519,6 @@ public:
 		}
 
 		return {};
-	}
-
-	void UpdatePlayerGroupCallbacks(const FString& eos_id, TArray<FString> groups) override
-	{
-		std::lock_guard<std::mutex> lg(playersMutex);
-		permissionPlayers[eos_id].CallbackGroups = groups;
 	}
 
 	bool IsTribeExists(int tribeId) override
@@ -772,28 +778,13 @@ public:
 		return {};
 	}
 
-	void UpdateTribeGroupCallbacks(int tribeId, TArray<FString> groups) override
-	{
-		std::lock_guard<std::mutex> lg(tribesMutex);
-		permissionTribes[tribeId].CallbackGroups = groups;
-	}
-
 	void Init() override
 	{
-		groupsMutex.lock();
-		permissionGroups = InitGroups();
-		groupsMutex.unlock();
-
-		playersMutex.lock();
-		permissionPlayers = InitPlayers();
-		playersMutex.unlock();
-
-		tribesMutex.lock();
-		permissionTribes = InitTribes();
-		tribesMutex.unlock();
+		// Read everything without holding the cache locks, then swap. A table that failed to read keeps its current cache.
+		ApplySync(InitGroups(), InitPlayers(), InitTribes());
 	}
 
-	std::unordered_map<std::string, std::string> InitGroups() override
+	std::optional<std::unordered_map<std::string, std::string>> InitGroups() override
 	{
 		std::unordered_map<std::string, std::string> pGroups;
 
@@ -808,12 +799,13 @@ public:
 		catch (const std::exception& exception)
 		{
 			Log::GetLog()->error("({} {}) Unexpected DB error {}", __FILE__, __FUNCTION__, exception.what());
+			return std::nullopt;
 		}
 
 		return pGroups;
 	}
 
-	std::unordered_map<FString, CachedPermission, FStringHash, FStringEqual> InitPlayers() override
+	std::optional<std::unordered_map<FString, CachedPermission, FStringHash, FStringEqual>> InitPlayers() override
 	{
 		std::unordered_map<FString, CachedPermission, FStringHash, FStringEqual> pPlayers;
 
@@ -831,12 +823,13 @@ public:
 		catch (const std::exception& exception)
 		{
 			Log::GetLog()->error("({} {}) Unexpected DB error {}", __FILE__, __FUNCTION__, exception.what());
+			return std::nullopt;
 		}
 
 		return pPlayers;
 	}
 
-	std::unordered_map<int, CachedPermission> InitTribes() override
+	std::optional<std::unordered_map<int, CachedPermission>> InitTribes() override
 	{
 		std::unordered_map<int, CachedPermission> pTribes;
 
@@ -854,6 +847,7 @@ public:
 		catch (const std::exception& exception)
 		{
 			Log::GetLog()->error("({} {}) Unexpected DB error {}", __FILE__, __FUNCTION__, exception.what());
+			return std::nullopt;
 		}
 
 		return pTribes;

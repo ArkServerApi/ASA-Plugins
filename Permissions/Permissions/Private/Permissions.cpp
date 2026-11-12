@@ -147,55 +147,31 @@ namespace Permissions
 		TArray<FString> groups;
 		for (const auto& permissionCallback : playerPermissionCallbacks)
 		{
-			bool cache = false;
-			if (permissionCallback->onlyCheckOnline) continue;
-			if (permissionCallback->cacheBySteamId && database->IsPlayerExists(eos_id))
-			{
-				CachedPermission permissions = database->HydratePlayerGroups(eos_id);
+			// onlyCheckOnline means "only ask this callback about online players", not "never ask it".
+			if (permissionCallback->onlyCheckOnline && !isOnline)
+				continue;
 
-				if (permissions.hasCheckedCallbacks)
-				{
-					for (auto group : permissions.CallbackGroups)
-					{
-						if (!groups.Contains(group))
-							groups.Add(group);
-					}
-					continue;
-				}
-				cache = true;
-			}
-			if (permissionCallback->cacheByTribe && database->IsTribeExists(tribeId))
-			{
-				CachedPermission permissions = database->HydrateTribeGroups(tribeId);
+			// Each callback has its own cache entry, so one callback's cached result can't stand in for another's.
+			TArray<FString> callbackGroups;
+			bool cached = false;
+			if (permissionCallback->cacheBySteamId)
+				cached = database->GetCachedPlayerCallbackGroups(eos_id, permissionCallback->command, callbackGroups);
+			if (!cached && permissionCallback->cacheByTribe && tribeId > 0)
+				cached = database->GetCachedTribeCallbackGroups(tribeId, permissionCallback->command, callbackGroups);
 
-				if (permissions.hasCheckedCallbacks)
-				{
-					for (auto group : permissions.CallbackGroups)
-					{
-						if (!groups.Contains(group))
-							groups.Add(group);
-					}
-					continue;
-				}
-				cache = true;
-			}
-			auto callbackGroups = permissionCallback->callback(eos_id, &tribeId);
-			if (cache && callbackGroups.Num() > 0)
+			if (!cached)
 			{
-				if (permissionCallback->cacheBySteamId && database->IsPlayerExists(eos_id))
-				{
-					database->UpdatePlayerGroupCallbacks(eos_id, callbackGroups);
-				}
-				if (permissionCallback->cacheByTribe && database->IsTribeExists(tribeId))
-				{
-					database->UpdateTribeGroupCallbacks(tribeId, callbackGroups);
-				}
+				// The callback may fill in the tribe id (it gets a pointer), so the tribe cache uses the value after the call.
+				int callbackTribeId = tribeId;
+				callbackGroups = permissionCallback->callback(eos_id, &callbackTribeId);
+				if (permissionCallback->cacheBySteamId)
+					database->UpdatePlayerGroupCallbacks(eos_id, permissionCallback->command, callbackGroups);
+				if (permissionCallback->cacheByTribe && callbackTribeId > 0)
+					database->UpdateTribeGroupCallbacks(callbackTribeId, permissionCallback->command, callbackGroups);
 			}
-			for (auto group : callbackGroups)
-			{
-				if (!groups.Contains(group))
-					groups.Add(group);
-			}
+
+			for (const auto& group : callbackGroups)
+				groups.AddUnique(group);
 		}
 		return groups;
 	}
@@ -371,14 +347,17 @@ namespace Permissions
 
 	bool IsGroupHasPermission(const FString& group, const FString& permission)
 	{
-		if (!database->IsGroupExists(group))
-			return false;
+		// GetGroupPermissions returns nothing for a group that doesn't exist.
+		return GetGroupPermissions(group).Contains(permission);
+	}
 
-		TArray<FString> permissions = GetGroupPermissions(group);
-
-		for (const auto& current_perm : permissions)
+	// Reads and parses each group's permission list once, checking for the permission and "*" together.
+	static bool AnyGroupHasPermission(const TArray<FString>& groups, const FString& permission)
+	{
+		for (const auto& current_group : groups)
 		{
-			if (current_perm == permission)
+			const TArray<FString> permissions = GetGroupPermissions(current_group);
+			if (permissions.Contains(permission) || permissions.Contains(L"*"))
 				return true;
 		}
 
@@ -387,28 +366,12 @@ namespace Permissions
 
 	bool IsPlayerHasPermission(const FString& eos_id, const FString& permission)
 	{
-		TArray<FString> groups = GetPlayerGroups(eos_id);
-
-		for (const auto& current_group : groups)
-		{
-			if (IsGroupHasPermission(current_group, permission) || IsGroupHasPermission(current_group, "*"))
-				return true;
-		}
-
-		return false;
+		return AnyGroupHasPermission(GetPlayerGroups(eos_id), permission);
 	}
 	
-		bool IsTribeHasPermission(int tribeId, const FString& permission)
+	bool IsTribeHasPermission(int tribeId, const FString& permission)
 	{
-		TArray<FString> groups = GetTribeGroups(tribeId);
-
-		for (const auto& current_group : groups)
-		{
-			if (IsGroupHasPermission(current_group, permission) || IsGroupHasPermission(current_group, "*"))
-				return true;
-		}
-
-		return false;
+		return AnyGroupHasPermission(GetTribeGroups(tribeId), permission);
 	}
 
 	std::optional<std::string> GroupGrantPermission(const FString& group, const FString& permission)

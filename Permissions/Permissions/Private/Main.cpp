@@ -6,6 +6,7 @@
 
 #include "Main.h"
 
+#include <atomic>
 #include <fstream>
 
 #include "../Public/Permissions.h"
@@ -15,8 +16,10 @@
 
 #pragma comment(lib, "AsaApi.lib")
 
-// Manage all async calls
-thread_pool pool;
+// Runs the background database sync. Created at the end of Load(), not as a global: its threads
+// can't start while the loader lock is held, so a pool built during DLL load and torn down by a
+// failed load would wait on them forever.
+std::unique_ptr<thread_pool> pool;
 namespace Permissions
 {
 	nlohmann::json config;
@@ -26,6 +29,16 @@ namespace Permissions
 	bool SendMessagesAsNotification = false;
 	float TextSize = 1.5f;
 	float DisplayTime = 3.0f;
+
+	// Converts an hours argument ("1.5") to whole seconds. Throws std::out_of_range for negative values
+	// or anything over ten years, so the callers' catch reports it as a parsing error.
+	long HoursToSeconds(const FString& hours_str)
+	{
+		const double hours = std::stod(*hours_str);
+		if (!(hours >= 0.0) || hours > 87600.0)
+			throw std::out_of_range("hours must be between 0 and 87600");
+		return static_cast<long>(hours * 3600.0);
+	}
 
 
 	FTribeData* GetTribeData(AShooterPlayerController* playerController)
@@ -181,9 +194,9 @@ namespace Permissions
 
 		try
 		{
-			secs = std::stof(*parsed[3]) * 3600;
+			secs = HoursToSeconds(*parsed[3]);
 			if (parsed.IsValidIndex(4)) {
-				delaySecs = std::stof(*parsed[4]) * 3600;
+				delaySecs = HoursToSeconds(*parsed[4]);
 				secs += delaySecs;
 			}
 		}
@@ -232,7 +245,7 @@ namespace Permissions
 	void RemovePlayerFromTimedGroupCmd(APlayerController* player_controller, FString* cmd, bool)
 	{
 		auto result = RemovePlayerFromTimedGroup(*cmd);
-		HandlePlayerMessage(player_controller, result, "Successfully aremoved player from timed group.");
+		HandlePlayerMessage(player_controller, result, "Successfully removed player from timed group.");
 
 	}
 
@@ -240,7 +253,7 @@ namespace Permissions
 	{
 		auto result = RemovePlayerFromTimedGroup(rcon_packet->Body);
 		if (!result.has_value())
-			SendRconReply(rcon_connection, rcon_packet->Id, "Successfully aremoved player from timed group.");
+			SendRconReply(rcon_connection, rcon_packet->Id, "Successfully removed player from timed group.");
 		else
 			SendRconReply(rcon_connection, rcon_packet->Id, result.value().c_str());
 	}
@@ -260,7 +273,7 @@ namespace Permissions
 
 		try
 		{
-			tribe_id = std::stoull(*parsed[1]);
+			tribe_id = std::stoi(*parsed[1]);
 		}
 		catch (const std::exception& exception)
 		{
@@ -303,7 +316,7 @@ namespace Permissions
 
 		try
 		{
-			tribe_id = std::stoull(*parsed[1]);
+			tribe_id = std::stoi(*parsed[1]);
 		}
 		catch (const std::exception& exception)
 		{
@@ -346,10 +359,10 @@ namespace Permissions
 
 		try
 		{
-			tribe_id = std::stoull(*parsed[1]);
-			secs = std::stof(*parsed[3]) * 3600;
+			tribe_id = std::stoi(*parsed[1]);
+			secs = HoursToSeconds(*parsed[3]);
 			if (parsed.IsValidIndex(4)) {
-				delaySecs = std::stof(*parsed[4]) * 3600;
+				delaySecs = HoursToSeconds(*parsed[4]);
 				secs += delaySecs;
 			}
 		}
@@ -395,7 +408,7 @@ namespace Permissions
 
 		try
 		{
-			tribe_id = std::stoull(*parsed[1]);
+			tribe_id = std::stoi(*parsed[1]);
 		}
 		catch (const std::exception& exception)
 		{
@@ -416,7 +429,7 @@ namespace Permissions
 	{
 		auto result = RemoveTribeFromTimedGroup(rcon_packet->Body);
 		if (!result.has_value())
-			SendRconReply(rcon_connection, rcon_packet->Id, "Successfully aremoved tribe from timed group.");
+			SendRconReply(rcon_connection, rcon_packet->Id, "Successfully removed tribe from timed group.");
 		else
 			SendRconReply(rcon_connection, rcon_packet->Id, result.value().c_str());
 	}
@@ -548,36 +561,36 @@ namespace Permissions
 	}
 
 	// PlayerGroups
-	std::string getTimeLeft(int secs, int intervalsToShow) {
-		int days, hours, mins;
+	std::string getTimeLeft(long long secs, int intervalsToShow) {
+		long long days, hours, mins;
 		std::string timeLeft = "";
-		int secsLeft = secs;
+		long long secsLeft = secs;
 		int shown = 0;
 		if (secsLeft > 0) {
 			days = secsLeft / 86400;
 			if (days > 0 && intervalsToShow > shown) {
 				if (timeLeft.size() > 0) timeLeft += ", ";
-				timeLeft += fmt::format("{} Day{}", (int)days, (days >= 1 ? "s" : ""));
+				timeLeft += fmt::format("{} Day{}", days, (days > 1 ? "s" : ""));
 				secsLeft -= days * 86400;
 				shown++;
 			}
 			hours = secsLeft / 3600;
 			if (hours > 0 && intervalsToShow > shown) {
 				if (timeLeft.size() > 0) timeLeft += ", ";
-				timeLeft += fmt::format("{} Hr{}", (int)hours, (hours >= 1 ? "s" : ""));
+				timeLeft += fmt::format("{} Hr{}", hours, (hours > 1 ? "s" : ""));
 				secsLeft -= hours * 3600;
 				shown++;
 			}
 			mins = secsLeft / 60;
 			if (mins > 0 && intervalsToShow > shown) {
 				if (timeLeft.size() > 0) timeLeft += ", ";
-				timeLeft += fmt::format("{} Min{}", (int)mins, (mins >= 1 ? "s" : ""));
+				timeLeft += fmt::format("{} Min{}", mins, (mins > 1 ? "s" : ""));
 				secsLeft -= mins * 60;
 				shown++;
 			}
 			if (secsLeft > 0 && intervalsToShow > shown) {
 				if (timeLeft.size() > 0) timeLeft += ", ";
-				timeLeft += fmt::format("{} Sec{}", (int)secsLeft, (secsLeft >= 1 ? "s" : ""));
+				timeLeft += fmt::format("{} Sec{}", secsLeft, (secsLeft > 1 ? "s" : ""));
 				shown++;
 			}
 		}
@@ -655,43 +668,23 @@ namespace Permissions
 			}
 		}
 
-		auto world = AsaApi::GetApiUtils().GetWorld();
-		if (world)
+		// Add the tribe groups of this player's own tribe (only known while they're online).
+		AShooterPlayerController* shooter_pc = AsaApi::GetApiUtils().FindPlayerFromEOSID(eos_id);
+		if (FTribeData* tribeData = Permissions::GetTribeData(shooter_pc))
 		{
-			const auto& player_controllers = world->PlayerControllerListField();
-			for (TWeakObjectPtr<APlayerController> player_controller : player_controllers)
+			const auto tribeId = tribeData->TribeIDField();
+			if (tribeId > 0)
 			{
-				APlayerController* pc = player_controller.Get();
-				if (pc)
+				FString defaults = "";
+				for (const auto& tribeGroup : GetTribeDefaultGroups(tribeData))
 				{
-					AShooterPlayerController* shooter_pc = static_cast<AShooterPlayerController*>(pc);
-					if (shooter_pc)
-					{
-						auto tribeData = Permissions::GetTribeData(shooter_pc);
-						if (tribeData)
-						{
-							auto tribeId = tribeData->TribeIDField();
-							if (tribeId > 0)
-							{
-								auto defaultTribeGroups = GetTribeDefaultGroups(tribeData);
-								FString defaults = "";
-								for (auto tribeGroup : defaultTribeGroups)
-								{
-									if (defaults.Len() > 0) defaults += ", ";
-									defaults += tribeGroup;
-								}
-								FString tribeStr = GetTribeGroupsStr(defaults, tribeId, forChat);
-								if (groups_str.Len() > 0 && tribeStr.Len() > 0)
-									groups_str += "\n";
-								groups_str += tribeStr;
-							}
-						}
-					}
-					else
-						Log::GetLog()->error("({} {}) AShooterPlayerController is null", __FILE__, __FUNCTION__);
+					if (defaults.Len() > 0) defaults += ", ";
+					defaults += tribeGroup;
 				}
-				else
-					Log::GetLog()->error("({} {}) APlayerController is null", __FILE__, __FUNCTION__);
+				FString tribeStr = GetTribeGroupsStr(defaults, tribeId, forChat);
+				if (groups_str.Len() > 0 && tribeStr.Len() > 0)
+					groups_str += "\n";
+				groups_str += tribeStr;
 			}
 		}
 
@@ -748,7 +741,7 @@ namespace Permissions
 
 		try
 		{
-			tribe_id = std::stoull(*parsed[1]);
+			tribe_id = std::stoi(*parsed[1]);
 		}
 		catch (const std::exception& exception)
 		{
@@ -865,49 +858,78 @@ namespace Permissions
 		AsaApi::GetApiUtils().SendChatMessage(player_controller, L"Permissions", *groups_str);
 	}
 
+	std::atomic<bool> syncInProgress{ false };
+
 	void DatabaseSync()
 	{
+		if (!pool)
+			return;
+
 		if (difftime(time(0), lastDatabaseSyncTime) >= SyncFrequency)
 		{
-			pool.push_task(
-				[]() { database->Init(); }
-			);
+			// Skip this round if the previous sync is still reading (slow or unreachable database),
+			// rather than queueing overlapping reads on the same connection.
+			bool expected = false;
+			if (syncInProgress.compare_exchange_strong(expected, true))
+			{
+				pool->push_task(
+					[]()
+					{
+						database->Init();
+						syncInProgress = false;
+					}
+				);
+			}
 
 			lastDatabaseSyncTime = time(0);
 		}
 	}
 
-	void ReadConfig()
+	// Reads config.json. On failure, logs why and returns false, leaving the current settings untouched.
+	bool ReadConfig()
 	{
-		const std::string config_path = GetConfigPath();
-		std::ifstream file{ config_path };
-		if (!file.is_open())
-			throw std::runtime_error("Can't open config.json");
+		nlohmann::json loaded;
+		try
+		{
+			std::ifstream file{ GetConfigPath() };
+			if (!file.is_open())
+			{
+				Log::GetLog()->error("Can't open config.json");
+				return false;
+			}
+			file >> loaded;
+			if (!loaded.is_object())
+			{
+				Log::GetLog()->error("config.json must contain a JSON object");
+				return false;
+			}
 
-		file >> config;
+			const bool hideAll = loaded.value("HideAllPlayerSuccessMessages", false);
+			const bool asNotification = loaded.value("SendMessagesAsNotification", false);
+			const float textSize = loaded.value("TextSize", 1.5f);
+			const float displayTime = loaded.value("DisplayTime", 3.0f);
 
-		HideAllPlayerSuccessMessages = config.value("HideAllPlayerSuccessMessages", false);
-		SendMessagesAsNotification = config.value("SendMessagesAsNotification", false);
-
-		TextSize = config.value("TextSize", 1.5f);
-		DisplayTime = config.value("DisplayTime", 3.0f);
-
-		file.close();
+			config = std::move(loaded);
+			HideAllPlayerSuccessMessages = hideAll;
+			SendMessagesAsNotification = asNotification;
+			TextSize = textSize;
+			DisplayTime = displayTime;
+			return true;
+		}
+		catch (const std::exception& error)
+		{
+			Log::GetLog()->error("Can't read config.json: {}", error.what());
+			return false;
+		}
 	}
 
 	void ReloadConfig(APlayerController* player_controller, FString* /*unused*/, bool /*unused*/)
 	{
 		auto* shooter_controller = static_cast<AShooterPlayerController*>(player_controller);
 
-		try
+		if (!ReadConfig())
 		{
-			ReadConfig();
-		}
-		catch (const std::exception& error)
-		{
-			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, "Failed to reload config");
-
-			Log::GetLog()->error(error.what());
+			AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, "Failed to reload config, kept the current settings");
 			return;
 		}
 
@@ -918,15 +940,9 @@ namespace Permissions
 	{
 		FString reply;
 
-		try
+		if (!ReadConfig())
 		{
-			ReadConfig();
-		}
-		catch (const std::exception& error)
-		{
-			Log::GetLog()->error(error.what());
-
-			reply = error.what();
+			reply = "Failed to reload config, kept the current settings (see the Permissions log)";
 			rcon_connection->SendMessageW(rcon_packet->Id, 0, &reply);
 			return;
 		}
@@ -939,20 +955,16 @@ namespace Permissions
 	{
 		Log::Get().Init("Permission");
 
-		try
+		// A missing or broken config.json doesn't stop the plugin: it runs on defaults (SQLite at the default path).
+		if (!ReadConfig())
 		{
-			ReadConfig();
-
-			SyncFrequency = config.value("ClusterSyncTime", 60);
-			if (SyncFrequency < 20)
-				SyncFrequency = 20;
-
+			Log::GetLog()->error("Using default settings");
+			config = nlohmann::json::object();
 		}
-		catch (const std::exception& error)
-		{
-			Log::GetLog()->error(error.what());
-			throw;
-		}
+
+		SyncFrequency = config.value("ClusterSyncTime", 60);
+		if (SyncFrequency < 20)
+			SyncFrequency = 20;
 
 		if (config.value("UseMysql", false))
 		{
@@ -1017,7 +1029,8 @@ namespace Permissions
 
 		AsaApi::GetCommands().AddOnTimerCallback("DatabaseSync", &DatabaseSync);
 
-		pool.sleep_duration = 20000; // "if not set, default is 1ms which is overkill and will increase cpu usage a lot" - @Lethal 2021
+		pool = std::make_unique<thread_pool>();
+		pool->sleep_duration = 20000; // "if not set, default is 1ms which is overkill and will increase cpu usage a lot" - @Lethal 2021
 	}
 }
 
@@ -1026,7 +1039,16 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
-		Permissions::Load();
+		// An exception must not escape DllMain. Returning FALSE makes the plugin fail to load cleanly. This is safe
+		// only because Load() creates the thread pool last, so a failure leaves no threads behind to join.
+		try
+		{
+			Permissions::Load();
+		}
+		catch (...)
+		{
+			return FALSE;
+		}
 		break;
 	case DLL_PROCESS_DETACH:
 		break;

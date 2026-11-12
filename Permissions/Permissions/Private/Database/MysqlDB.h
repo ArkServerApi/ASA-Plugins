@@ -24,6 +24,7 @@ public:
 			options.port = port;
 			options.ssl_enforce = true;
 			options.ssl_verify_server_cert = false;
+			options_ = options;
 
 			bool result = db_.open(options);
 			if (!result)
@@ -107,7 +108,7 @@ public:
 	{
 		try
 		{
-			if (db_.query(fmt::format("INSERT INTO {} (EOS_Id, PermissionGroups) VALUES ('{}', '{}');", table_players_, eos_id.ToString(), "Default,")))
+			if (db_.query(fmt::format("INSERT INTO {} (EOS_Id, PermissionGroups) VALUES ('{}', '{}');", table_players_, Esc(eos_id.ToString()), "Default,")))
 			{
 				std::lock_guard<std::mutex> lg(playersMutex);
 				permissionPlayers[eos_id] = CachedPermission("Default,", "");
@@ -233,7 +234,7 @@ public:
 			for (const FString& f : groups)
 				query_groups += f + ",";
 
-			const bool res = db_.query(fmt::format("UPDATE {} SET PermissionGroups = '{}' WHERE EOS_Id = '{}';", table_players_, query_groups.ToString(), eos_id.ToString()));
+			const bool res = db_.query(fmt::format("UPDATE {} SET PermissionGroups = '{}' WHERE EOS_Id = '{}';", table_players_, Esc(query_groups.ToString()), Esc(eos_id.ToString())));
 			if (!res)
 			{
 				return "Unexpected DB error";
@@ -273,7 +274,7 @@ public:
 
 		try
 		{
-			const bool res = db_.query(fmt::format("UPDATE {} SET PermissionGroups = '{}' WHERE EOS_Id = '{}';", table_players_, new_groups.ToString(), eos_id.ToString()));
+			const bool res = db_.query(fmt::format("UPDATE {} SET PermissionGroups = '{}' WHERE EOS_Id = '{}';", table_players_, Esc(new_groups.ToString()), Esc(eos_id.ToString())));
 			if (!res)
 			{
 				return "Unexpected DB error";
@@ -295,12 +296,15 @@ public:
 
 	std::optional<std::string> AddGroup(const FString& group) override
 	{
+		if (auto invalid = ValidateGroupName(group))
+			return invalid;
+
 		if (IsGroupExists(group))
 			return "Group already exists";
 
 		try
 		{
-			const bool res = db_.query(fmt::format("INSERT INTO {} (GroupName) VALUES ('{}');", table_groups_, group.ToString()));
+			const bool res = db_.query(fmt::format("INSERT INTO {} (GroupName) VALUES ('{}');", table_groups_, Esc(group.ToString())));
 			if (!res)
 			{
 				return "Unexpected DB error";
@@ -338,7 +342,7 @@ public:
 
 		try
 		{
-			const bool res = db_.query(fmt::format("DELETE FROM {} WHERE GroupName = '{}';", table_groups_, group.ToString()));
+			const bool res = db_.query(fmt::format("DELETE FROM {} WHERE GroupName = '{}';", table_groups_, Esc(group.ToString())));
 			if (!res)
 			{
 				return "Unexpected DB error";
@@ -368,7 +372,7 @@ public:
 
 		try
 		{
-			const bool res = db_.query(fmt::format("UPDATE {} SET Permissions = concat(Permissions, '{},') WHERE GroupName = '{}';", table_groups_, permission.ToString(), group.ToString()));
+			const bool res = db_.query(fmt::format("UPDATE {} SET Permissions = concat(Permissions, '{},') WHERE GroupName = '{}';", table_groups_, Esc(permission.ToString()), Esc(group.ToString())));
 			if (!res)
 			{
 				return "Unexpected DB error";
@@ -409,7 +413,7 @@ public:
 
 		try
 		{
-			const bool res = db_.query(fmt::format("UPDATE {} SET Permissions = '{}' WHERE GroupName = '{}';", table_groups_, new_permissions.ToString(), group.ToString()));
+			const bool res = db_.query(fmt::format("UPDATE {} SET Permissions = '{}' WHERE GroupName = '{}';", table_groups_, Esc(new_permissions.ToString()), Esc(group.ToString())));
 			if (!res)
 			{
 				return "Unexpected DB error";
@@ -489,7 +493,7 @@ public:
 		}
 		try
 		{
-			const bool res = db_.query(fmt::format("UPDATE {} SET TimedPermissionGroups = '{}' WHERE EOS_Id = '{}';", table_players_, new_groups.ToString(), eos_id.ToString()));
+			const bool res = db_.query(fmt::format("UPDATE {} SET TimedPermissionGroups = '{}' WHERE EOS_Id = '{}';", table_players_, Esc(new_groups.ToString()), Esc(eos_id.ToString())));
 			if (!res)
 			{
 				return "Unexpected DB error";
@@ -534,7 +538,7 @@ public:
 
 		try
 		{
-			const bool res = db_.query(fmt::format("UPDATE {} SET TimedPermissionGroups = '{}' WHERE EOS_Id = '{}';", table_players_, new_groups.ToString(), eos_id.ToString()));
+			const bool res = db_.query(fmt::format("UPDATE {} SET TimedPermissionGroups = '{}' WHERE EOS_Id = '{}';", table_players_, Esc(new_groups.ToString()), Esc(eos_id.ToString())));
 			if (!res)
 			{
 				return "Unexpected DB error";
@@ -552,12 +556,6 @@ public:
 		}
 
 		return {};
-	}
-
-	void UpdatePlayerGroupCallbacks(const FString& eos_id, TArray<FString> groups) override
-	{
-		std::lock_guard<std::mutex> lg(playersMutex);
-		permissionPlayers[eos_id].CallbackGroups = groups;
 	}
 
 	bool IsTribeExists(int tribeId) override
@@ -642,7 +640,7 @@ public:
 			for (const FString& f : groups)
 				query_groups += f + ",";
 
-			const bool res = db_.query(fmt::format("UPDATE {} SET PermissionGroups = '{}' WHERE TribeId = {};", table_tribes_, query_groups.ToString(), tribeId));
+			const bool res = db_.query(fmt::format("UPDATE {} SET PermissionGroups = '{}' WHERE TribeId = {};", table_tribes_, Esc(query_groups.ToString()), tribeId));
 			if (!res)
 			{
 				return "Unexpected DB error";
@@ -682,7 +680,7 @@ public:
 
 		try
 		{
-			const bool res = db_.query(fmt::format("UPDATE {} SET PermissionGroups = '{}' WHERE TribeId = {};", table_tribes_, new_groups.ToString(), tribeId));
+			const bool res = db_.query(fmt::format("UPDATE {} SET PermissionGroups = '{}' WHERE TribeId = {};", table_tribes_, Esc(new_groups.ToString()), tribeId));
 			if (!res)
 			{
 				return "Unexpected DB error";
@@ -762,7 +760,7 @@ public:
 		}
 		try
 		{
-			const bool res = db_.query(fmt::format("UPDATE {} SET TimedPermissionGroups = '{}' WHERE TribeId = {};", table_tribes_, new_groups.ToString(), tribeId));
+			const bool res = db_.query(fmt::format("UPDATE {} SET TimedPermissionGroups = '{}' WHERE TribeId = {};", table_tribes_, Esc(new_groups.ToString()), tribeId));
 			if (!res)
 			{
 				return "Unexpected DB error";
@@ -807,7 +805,7 @@ public:
 
 		try
 		{
-			const bool res = db_.query(fmt::format("UPDATE {} SET TimedPermissionGroups = '{}' WHERE TribeId = {};", table_tribes_, new_groups.ToString(), tribeId));
+			const bool res = db_.query(fmt::format("UPDATE {} SET TimedPermissionGroups = '{}' WHERE TribeId = {};", table_tribes_, Esc(new_groups.ToString()), tribeId));
 			if (!res)
 			{
 				return "Unexpected DB error";
@@ -827,37 +825,32 @@ public:
 		return {};
 	}
 
-	void UpdateTribeGroupCallbacks(int tribeId, TArray<FString> groups) override
-	{
-		std::lock_guard<std::mutex> lg(tribesMutex);
-		permissionTribes[tribeId].CallbackGroups = groups;
-	}
-
 	void Init() override
 	{
-		auto pGroups = InitGroups();
-		groupsMutex.lock();
-		permissionGroups = pGroups;
-		groupsMutex.unlock();
+		// Sync reads use their own connection. Init runs on the thread pool while the game thread writes through
+		// db_, and a MySQL connection can't be shared between threads: daotk only locks around sending the query,
+		// not around reading the result.
+		std::lock_guard<std::mutex> lg(syncMutex_);
+		if (!sync_db_open_)
+		{
+			sync_db_open_ = sync_db_.open(options_);
+			if (!sync_db_open_)
+			{
+				Log::GetLog()->error("({} {}) Couldn't open the sync connection, keeping the current cache", __FILE__, __FUNCTION__);
+				return;
+			}
+		}
 
-		auto pPlayers = InitPlayers();
-		playersMutex.lock();
-		permissionPlayers = pPlayers;
-		playersMutex.unlock();
-
-		auto pTribes = InitTribes();
-		tribesMutex.lock();
-		permissionTribes = pTribes;
-		tribesMutex.unlock();
+		ApplySync(InitGroups(), InitPlayers(), InitTribes());
 	}
 
-	std::unordered_map<std::string, std::string> InitGroups() override
+	std::optional<std::unordered_map<std::string, std::string>> InitGroups() override
 	{
 		std::unordered_map<std::string, std::string> pGroups;
 
 		try
 		{
-			db_.query(fmt::format("SELECT GroupName, Permissions FROM {};", table_groups_))
+			sync_db_.query(fmt::format("SELECT GroupName, Permissions FROM {};", table_groups_))
 				.each([&pGroups](std::string groupName, std::string groupPermissions)
 					{
 						pGroups[groupName] = groupPermissions;
@@ -867,18 +860,19 @@ public:
 		catch (const std::exception& exception)
 		{
 			Log::GetLog()->error("({} {}) Unexpected DB error {}", __FILE__, __FUNCTION__, exception.what());
+			return std::nullopt;
 		}
 
 		return pGroups;
 	}
 
-	std::unordered_map<FString, CachedPermission, FStringHash, FStringEqual> InitPlayers() override
+	std::optional<std::unordered_map<FString, CachedPermission, FStringHash, FStringEqual>> InitPlayers() override
 	{
 		std::unordered_map<FString, CachedPermission, FStringHash, FStringEqual> pPlayers;
 
 		try
 		{
-			db_.query(fmt::format("SELECT EOS_Id, PermissionGroups, TimedPermissionGroups FROM {};", table_players_))
+			sync_db_.query(fmt::format("SELECT EOS_Id, PermissionGroups, TimedPermissionGroups FROM {};", table_players_))
 				.each([&pPlayers](std::string eos_id, std::string groups, std::string timedGroups)
 					{
 						pPlayers[FString(eos_id.c_str())] = CachedPermission(FString(groups.c_str()), FString(timedGroups.c_str()));
@@ -888,18 +882,19 @@ public:
 		catch (const std::exception& exception)
 		{
 			Log::GetLog()->error("({} {}) Unexpected DB error {}", __FILE__, __FUNCTION__, exception.what());
+			return std::nullopt;
 		}
 
 		return pPlayers;
 	}
 
-	std::unordered_map<int, CachedPermission> InitTribes() override
+	std::optional<std::unordered_map<int, CachedPermission>> InitTribes() override
 	{
 		std::unordered_map<int, CachedPermission> pTribes;
 
 		try
 		{
-			db_.query(fmt::format("SELECT TribeId, PermissionGroups, TimedPermissionGroups FROM {};", table_tribes_))
+			sync_db_.query(fmt::format("SELECT TribeId, PermissionGroups, TimedPermissionGroups FROM {};", table_tribes_))
 				.each([&pTribes](int tribeId, std::string groups, std::string timedGroups)
 					{
 						pTribes[tribeId] = CachedPermission(groups.c_str(), timedGroups.c_str());
@@ -909,6 +904,7 @@ public:
 		catch (const std::exception& exception)
 		{
 			Log::GetLog()->error("({} {}) Unexpected DB error {}", __FILE__, __FUNCTION__, exception.what());
+			return std::nullopt;
 		}
 
 		return pTribes;
@@ -920,7 +916,33 @@ public:
 	}
 
 private:
+	// Escapes a value for use inside '...' in a query (same set of characters as mysql_real_escape_string).
+	static std::string Esc(const std::string& in)
+	{
+		std::string out;
+		out.reserve(in.size());
+		for (const char c : in)
+		{
+			switch (c)
+			{
+			case '\0': out += "\\0"; break;
+			case '\n': out += "\\n"; break;
+			case '\r': out += "\\r"; break;
+			case '\\': out += "\\\\"; break;
+			case '\'': out += "\\'"; break;
+			case '"': out += "\\\""; break;
+			case '\x1a': out += "\\Z"; break;
+			default: out += c;
+			}
+		}
+		return out;
+	}
+
 	daotk::mysql::connection db_;
+	daotk::mysql::connection sync_db_;
+	daotk::mysql::connect_options options_;
+	std::mutex syncMutex_;
+	bool sync_db_open_ = false;
 	std::string table_players_;
 	std::string table_tribes_;
 	std::string table_groups_;
