@@ -1,9 +1,10 @@
 #pragma once
 #include "../Public/Permissions.h"
+#include "API/ARK/Other.h"
 
 struct TimedGroup {
 	FString GroupName;
-	long long DelayUntilTime, ExpireAtTime;
+	long long DelayUntilTime = 0, ExpireAtTime = 0;
 
 	bool operator==(const TimedGroup& other) const {
 		return GroupName == other.GroupName;
@@ -23,24 +24,32 @@ public:
 		for (auto GroupStr : TimedGroupStrs) {
 			TArray<FString> GroupParts;
 			GroupStr.ParseIntoArray(GroupParts, L";", true);
+			// Each entry is "delayUntil;expireAt;groupName". Skip anything else rather than read past the array.
+			if (GroupParts.Num() < 3)
+			{
+				Log::GetLog()->error("({} {}) Skipping malformed timed group entry '{}'", __FILE__, __FUNCTION__, GroupStr.ToString());
+				continue;
+			}
 			TimedGroup Group;
 			Group.GroupName = GroupParts[2];
 			try
 			{
-				Group.DelayUntilTime = std::stoull(*GroupParts[0]);
-				Group.ExpireAtTime = std::stoull(*GroupParts[1]);
+				Group.DelayUntilTime = std::stoll(*GroupParts[0]);
+				Group.ExpireAtTime = std::stoll(*GroupParts[1]);
 			}
 			catch (const std::exception& exception)
 			{
-				Log::GetLog()->error("({} {}) Parsing error {}", __FILE__, __FUNCTION__, exception.what());
+				Log::GetLog()->error("({} {}) Skipping timed group '{}': parsing error {}", __FILE__, __FUNCTION__, Group.GroupName.ToString(), exception.what());
+				continue;
 			}
 			TimedGroups.Add(Group);
 		}
 	}
 	TArray<FString> Groups;
 	TArray<TimedGroup> TimedGroups;
-	TArray<FString> CallbackGroups;
-	bool hasCheckedCallbacks;
+	// Groups returned by permission callbacks, keyed by callback name. A key being present means that
+	// callback has already been asked for this player or tribe; the entry lives until the next database sync.
+	std::unordered_map<FString, TArray<FString>, FStringHash, FStringEqual> CallbackGroups;
 
 	TArray<FString> getGroups(long long now) 
 	{
