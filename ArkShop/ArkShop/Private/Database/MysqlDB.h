@@ -27,7 +27,10 @@ public:
 			if (!result)
 			{
 				Log::GetLog()->critical("Failed to open database connection check your settings!");
+				return;
 			}
+
+			ready_ = true;
 
 			result = db_.query(fmt::format("CREATE TABLE IF NOT EXISTS {} ("
 				"Id INT NOT NULL AUTO_INCREMENT,"
@@ -63,6 +66,11 @@ public:
 		{
 			Log::GetLog()->error("({} {}) Unexpected DB error {}", __FILE__, __FUNCTION__, exception.what());
 		}
+	}
+
+	bool IsReady() const override
+	{
+		return ready_;
 	}
 
 	bool TryAddNewPlayer(const FString& eos_id) override
@@ -259,6 +267,7 @@ public:
 
 private:
 	daotk::mysql::connection db_;
+	bool ready_ = false;
 	std::string table_players_;
 	std::string table_log_;
 };

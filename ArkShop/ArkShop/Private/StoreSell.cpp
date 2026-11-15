@@ -6,6 +6,7 @@
 #include "DBHelper.h"
 #include "ShopLog.h"
 #include <ArkShopUIHelper.h>
+#include "Tools.h"
 
 namespace ArkShop::StoreSell
 {
@@ -15,15 +16,15 @@ namespace ArkShop::StoreSell
 	{
 		bool success = false;
 
-		const int price = item_entry.value("Price", 1) * amount;
-		if (price <= 0)
+		int price;
+		if (!ArkShop::Tools::MultiplyAmount(item_entry.value("Price", 1), amount, price) || price <= 0)
 		{
 			return false;
 		}
 
 		const FString blueprint = FString(item_entry.value("Blueprint", "").c_str());
-		const int needed_amount = item_entry.value("Amount", 1) * amount;
-		if (needed_amount <= 0)
+		int needed_amount;
+		if (!ArkShop::Tools::MultiplyAmount(item_entry.value("Amount", 1), amount, needed_amount) || needed_amount <= 0)
 		{
 			return false;
 		}
@@ -111,6 +112,11 @@ namespace ArkShop::StoreSell
 		if (amount <= 0)
 		{
 			amount = 1;
+		}
+
+		if (!IsAmountAllowed(player_controller, amount))
+		{
+			return false;
 		}
 
 		bool success = false;

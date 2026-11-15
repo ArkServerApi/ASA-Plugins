@@ -7,6 +7,7 @@
 #include "ArkShop.h"
 #include "ShopLog.h"
 #include "ArkShopUIHelper.h"
+#include "Tools.h"
 
 namespace ArkShop::Kits
 {
@@ -17,7 +18,7 @@ namespace ArkShop::Kits
 	 */
 	nlohmann::basic_json<> GetPlayerKitsConfig(const FString& eos_id)
 	{
-		const std::string kits_config = database->GetPlayerKits(eos_id);
+		const std::string kits_config = database ? database->GetPlayerKits(eos_id) : "{}";
 
 		nlohmann::json conf = nlohmann::json::object();
 
@@ -41,7 +42,7 @@ namespace ArkShop::Kits
 	 */
 	bool SaveConfig(const std::string& dump, const FString& eos_id)
 	{
-		return database->UpdatePlayerKits(eos_id, dump);
+		return database && database->UpdatePlayerKits(eos_id, dump);
 	}
 
 	/**
@@ -530,6 +531,11 @@ namespace ArkShop::Kits
 					return;
 				}
 
+				if (!IsAmountAllowed(player_controller, amount))
+				{
+					return;
+				}
+
 				auto kits_list = config["Kits"];
 
 				auto kit_entry_iter = kits_list.find(kit_name_str);
@@ -550,8 +556,8 @@ namespace ArkShop::Kits
 					return;
 				}
 
-				const int final_price = price * amount;
-				if (final_price <= 0)
+				int final_price;
+				if (!ArkShop::Tools::MultiplyAmount(price, amount, final_price) || final_price <= 0)
 					return;
 
 				if (Points::GetPoints(eos_id) >= final_price && Points::SpendPoints(final_price, eos_id))
