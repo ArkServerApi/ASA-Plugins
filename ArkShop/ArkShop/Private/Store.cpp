@@ -8,6 +8,7 @@
 #include "ShopLog.h"
 #include "ArkShopUIHelper.h"
 #include "Kits.h"
+#include "Tools.h"
 
 namespace ArkShop::Store
 {
@@ -24,18 +25,28 @@ namespace ArkShop::Store
 			amount = 1;
 		}
 
-		const unsigned price = item_entry["Price"];
-		const int final_price = price * amount;
-		if (final_price <= 0)
+		const int price = item_entry.value("Price", 0);
+		int final_price;
+		if (!ArkShop::Tools::MultiplyAmount(price, amount, final_price) || final_price <= 0)
 		{
 			return false;
 		}
 
 		const int points = Points::GetPoints(eos_id);
 
+		// Check every item's total quantity before taking any points
+		const auto items_map = item_entry.value("Items", nlohmann::json::array());
+		for (const auto& item : items_map)
+		{
+			int total_amount;
+			if (!ArkShop::Tools::MultiplyAmount(item.value("Amount", 1), amount, total_amount))
+			{
+				return false;
+			}
+		}
+
 		if (points >= final_price && Points::SpendPoints(final_price, eos_id))
 		{
-			auto items_map = item_entry["Items"];
 			for (const auto& item : items_map)
 			{
 				const float quality = item.value("Quality", 0);
@@ -400,13 +411,19 @@ namespace ArkShop::Store
 				return false;
 			}
 
-			const unsigned price = item_entry["Price"];
+			// The amount only applies to items; other types always give one
+			if (type == "item" && !IsAmountAllowed(player_controller, amount))
+			{
+				return false;
+			}
+
+			const int price = item_entry.value("Price", 0);
 			int final_price = price;
 			if (type == "item")
 			{
 				success = BuyItem(player_controller, item_entry, eos_id, amount);
 				if (success)
-					final_price = price * amount;
+					final_price = price * amount; // BuyItem succeeded, so this was range-checked there
 			}
 			else if (type == "dino")
 			{

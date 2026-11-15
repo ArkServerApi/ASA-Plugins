@@ -28,6 +28,7 @@ DECLARE_HOOK(URCONServer_Init, bool, URCONServer*, FString, int, UShooterCheatMa
 
 FString closed_store_reason;
 bool store_enabled = true;
+bool plugin_loaded = false;
 
 FString ArkShop::SetMapName()
 {
@@ -601,9 +602,47 @@ void Hook_AShooterGameMode_Logout(AShooterGameMode* _this, AController* exiting)
 	AShooterGameMode_Logout_original(_this, exiting);
 }
 
-FString ArkShop::GetText(const std::string& str)
+FString ArkShop::GetText(const std::string& str, const std::string& fallback)
 {
-	return FString(AsaApi::Tools::Utf8Decode(config["Messages"].value(str, "No message")));
+	// Look the message up without modifying the config, and without throwing if
+	// the Messages section or the entry is missing or not a string
+	const auto messages = config.find("Messages");
+	if (messages != config.end() && messages->is_object())
+	{
+		const auto message = messages->find(str);
+		if (message != messages->end() && message->is_string())
+			return FString(AsaApi::Tools::Utf8Decode(message->get<std::string>()));
+	}
+
+	return FString(AsaApi::Tools::Utf8Decode(fallback));
+}
+
+int ArkShop::GetMaxAmountPerCommand()
+{
+	constexpr int default_max_amount = 1000;
+
+	const auto general = config.find("General");
+	if (general == config.end() || !general->is_object())
+		return default_max_amount;
+
+	const auto max_amount = general->find("MaxAmountPerCommand");
+	if (max_amount == general->end() || !max_amount->is_number_integer() || max_amount->get<long long>() <= 0)
+		return default_max_amount;
+
+	const long long value = max_amount->get<long long>();
+	constexpr long long int_max = (std::numeric_limits<int>::max)(); // json.hpp includes <limits>
+	return value > int_max ? static_cast<int>(int_max) : static_cast<int>(value);
+}
+
+bool ArkShop::IsAmountAllowed(AShooterPlayerController* player_controller, int amount)
+{
+	const int max_amount = GetMaxAmountPerCommand();
+	if (amount <= max_amount)
+		return true;
+
+	AsaApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"),
+		*GetText("AmountTooHigh", "<RichColor Color=\"1, 0, 0, 1\">The amount can't be higher than {0}</>"), max_amount);
+	return false;
 }
 
 bool ArkShop::IsStoreEnabled(AShooterPlayerController* player_controller)
@@ -631,9 +670,17 @@ void ReadConfig()
 		throw std::runtime_error("Can't open config.json");
 	}
 
-	file >> ArkShop::config;
-
+	// Parse into a separate object so a broken file leaves the current settings untouched
+	nlohmann::json new_config;
+	file >> new_config;
 	file.close();
+
+	if (!new_config.is_object())
+	{
+		throw std::runtime_error("config.json must contain a JSON object");
+	}
+
+	ArkShop::config = std::move(new_config);
 }
 
 void ReloadConfig(APlayerController* player_controller, FString* /*unused*/, bool /*unused*/)
@@ -651,7 +698,7 @@ void ReloadConfig(APlayerController* player_controller, FString* /*unused*/, boo
 	{
 		AsaApi::GetApiUtils().SendServerMessage(shooter_controller, FColorList::Red, "Failed to reload config");
 
-		Log::GetLog()->error(error.what());
+		Log::GetLog()->error("Failed to reload config, keeping the current settings: {}", error.what());
 		return;
 	}
 
@@ -671,7 +718,7 @@ void ReloadConfigRcon(RCONClientConnection* rcon_connection, RCONPacket* rcon_pa
 	}
 	catch (const std::exception& error)
 	{
-		Log::GetLog()->error(error.what());
+		Log::GetLog()->error("Failed to reload config, keeping the current settings: {}", error.what());
 
 		reply = error.what();
 		rcon_connection->SendMessageW(rcon_packet->Id, 0, &reply);
@@ -697,8 +744,10 @@ void ShowHelp(AShooterPlayerController* player_controller, FString* /*unused*/, 
 void Load()
 {
 	Log::Get().Init("ArkShop");
-	AsaApi::GetApiUtils().SetMessagingManager<AsaApiUtilsMessagingManager>();
-	//AsaApi::GetApiUtils().SetMessagingManager<MessagingManager>();
+
+	// Nothing in here may throw out of DllMain. A failed DllMain makes LoadLibrary fail and Windows
+	// unloads the DLL, and anything already registered with the API (commands, hooks, the messaging
+	// manager) would then point into unloaded memory. On any error the plugin stays loaded but inactive.
 
 	try
 	{
@@ -706,16 +755,15 @@ void Load()
 	}
 	catch (const std::exception& error)
 	{
-		Log::GetLog()->error(error.what());
-		throw;
+		Log::GetLog()->error("{} - ArkShop is inactive. Fix config.json, then reload the plugin or restart the server.", error.what());
+		return;
 	}
 
 	try
 	{
-		const auto& mysql_conf = ArkShop::config["Mysql"];
+		const auto mysql_conf = ArkShop::config.value("Mysql", nlohmann::json::object());
 
-		const bool use_mysql = mysql_conf["UseMysql"];
-		if (use_mysql)
+		if (mysql_conf.value("UseMysql", false))
 		{
 			ArkShop::database = std::make_unique<MySql>(
 				mysql_conf.value("MysqlHost", ""),
@@ -728,9 +776,27 @@ void Load()
 		}
 		else
 		{
-			const std::string db_path = ArkShop::config["General"]["DbPathOverride"];
+			const std::string db_path = ArkShop::config.value("General", nlohmann::json::object()).value("DbPathOverride", "");
 			ArkShop::database = std::make_unique<SqlLite>(db_path);
 		}
+	}
+	catch (const std::exception& error)
+	{
+		Log::GetLog()->error("Failed to open the database: {}", error.what());
+		ArkShop::database.reset();
+	}
+
+	if (!ArkShop::database || !ArkShop::database->IsReady())
+	{
+		Log::GetLog()->error("Database is not available - ArkShop is inactive. Check the database settings, then reload the plugin or restart the server.");
+		ArkShop::database.reset();
+		return;
+	}
+
+	try
+	{
+		// Set before registering anything, so Unload removes whatever was registered if a later step fails
+		plugin_loaded = true;
 
 		ArkShop::Points::Init();
 		ArkShop::Store::Init();
@@ -738,7 +804,7 @@ void Load()
 		ArkShop::StoreSell::Init();
 
 		//Discord Functions
-		const auto& discord_config = ArkShop::config["General"].value("Discord", nlohmann::json::object());
+		const auto discord_config = ArkShop::config.value("General", nlohmann::json::object()).value("Discord", nlohmann::json::object());
 
 		ArkShop::discord_enabled = discord_config.value("Enabled", false);
 		ArkShop::discord_sender_name = discord_config.value("SenderName", "");
@@ -755,16 +821,23 @@ void Load()
 
 		AsaApi::GetCommands().AddConsoleCommand("ArkShop.Reload", &ReloadConfig);
 		AsaApi::GetCommands().AddRconCommand("ArkShop.Reload", &ReloadConfigRcon);
+
+		// Registered last: only a fully loaded plugin should have a messaging manager
+		AsaApi::GetApiUtils().SetMessagingManager<AsaApiUtilsMessagingManager>();
 	}
 	catch (const std::exception& error)
 	{
-		Log::GetLog()->error(error.what());
-		throw;
+		Log::GetLog()->error("ArkShop failed to start: {}", error.what());
 	}
 }
 
 void Unload()
 {
+	if (!plugin_loaded)
+		return;
+
+	plugin_loaded = false;
+
 	const FString help = ArkShop::GetText("HelpCmd");
 	if (help != AsaApi::Tools::Utf8Decode("No message").c_str())
 	{

@@ -7,6 +7,11 @@ class IDatabase
 public:
 	virtual ~IDatabase() = default;
 
+	/**
+	 * \brief False if the backend could not be opened at startup
+	 */
+	virtual bool IsReady() const { return true; }
+
 	virtual bool TryAddNewPlayer(const FString& eos_id) = 0;
 	virtual bool IsPlayerExists(const FString& eos_id) = 0;
 

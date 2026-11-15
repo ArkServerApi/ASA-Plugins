@@ -22,6 +22,9 @@ namespace ArkShop::Points
 			return false;
 		}
 
+		if (!database)
+			return false;
+
 		const bool is_added = database->AddPoints(eos_id, amount);
 		if (!is_added)
 			return false;
@@ -38,7 +41,7 @@ namespace ArkShop::Points
 
 	bool SpendPoints(int amount, const FString& eos_id)
 	{
-		if (amount <= 0)
+		if (amount <= 0 || !database)
 			return false;
 
 		const bool is_spend = database->SpendPoints(eos_id, amount);
@@ -53,16 +56,19 @@ namespace ArkShop::Points
 
 	int GetPoints(const FString& eos_id)
 	{
-		return database->GetPoints(eos_id);
+		return database ? database->GetPoints(eos_id) : 0;
 	}
 
 	int GetTotalSpent(const FString& eos_id)
 	{
-		return database->GetTotalSpent(eos_id);
+		return database ? database->GetTotalSpent(eos_id) : 0;
 	}
 
 	bool SetPoints(const FString& eos_id, int new_amount)
 	{
+		if (!database)
+			return false;
+
 		const bool is_spend = database->SetPoints(eos_id, new_amount);
 		if (!is_spend)
 			return false;

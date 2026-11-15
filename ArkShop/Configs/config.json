@@ -28,6 +28,7 @@
       }
     },
     "ItemsPerPage": 15,
+    "MaxAmountPerCommand": 1000,
     "ShopDisplayTime": 15.0,
     "ShopTextSize": 1.3,
     "DbPathOverride": "",
@@ -355,6 +356,7 @@
     "HavePoints": "You have {0} points",
     "NoPoints": "<RichColor Color=\"1, 0, 0, 1\">You don't have enough points</>",
     "WrongId": "<RichColor Color=\"1, 0, 0, 1\">Wrong id</>",
+    "AmountTooHigh": "<RichColor Color=\"1, 0, 0, 1\">The amount can't be higher than {0}</>",
     "NoPermissionsKit": "<RichColor Color=\"1, 0, 0, 1\">You don't have permission to use this kit</>",
     "CantBuyKit": "<RichColor Color=\"1, 0, 0, 1\">You can't buy this kit</>",
     "BoughtKit": "<RichColor Color=\"0, 1, 0, 1\">You have successfully bought {0} kit</>",

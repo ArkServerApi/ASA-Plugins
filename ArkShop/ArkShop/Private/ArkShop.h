@@ -19,7 +19,9 @@ namespace ArkShop
 	FCustomItemData GetDinoCustomItemData(APrimalDinoCharacter* dino, UPrimalItem* saddle);
 	bool GiveDino(AShooterPlayerController* player_controller, int level, bool neutered, std::string gender, std::string blueprint, std::string saddleblueprint, bool PreventCryo, int stryderhead = -1, int stryderchest = -1, nlohmann::json resourceOverrides = "");
 	bool ShouldPreventStoreUse(AShooterPlayerController* player_controller);
-	FString GetText(const std::string& str);
+	FString GetText(const std::string& str, const std::string& fallback = "No message");
+	int GetMaxAmountPerCommand();
+	bool IsAmountAllowed(AShooterPlayerController* player_controller, int amount);
 	bool IsStoreEnabled(AShooterPlayerController* player_controller);
 	void ToogleStore(bool enabled, const FString& reason = "");
 
